@@ -1,0 +1,71 @@
+table#graha_mail tr:nth-child(odd) {
+	background:#FFFFFF;
+}
+table#graha_mail tr:nth-child(even) {
+	background:#F3F3F3;
+}
+
+table#graha_mail th.sender_name,
+table#graha_mail td.sender_name,
+table#graha_mail th.rcpt_name,
+table#graha_mail td.rcpt_name,
+table#graha_mail th.sent_date,
+table#graha_mail td.sent_date
+{
+	width:150px;
+	text-align:center;
+}
+div.nav div.center input[type='text'] {
+	width:150px;
+}
+table#graha_mail td.subject,
+table#graha_mail td.sender_name,
+table#graha_mail td.rcpt_name,
+table#graha_mail td.sent_date
+{
+	white-space: nowrap;;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+table#graha_mail {
+	width:100%;
+	max-width:100%;
+	table-layout: fixed;
+}
+
+@media only screen and (max-width: 600px) {
+	table#graha_mail th.sender_name,
+	table#graha_mail td.sender_name,
+	table#graha_mail th.rcpt_name,
+	table#graha_mail td.rcpt_name,
+	table#graha_mail th.sent_date,
+	table#graha_mail td.sent_date
+	{
+		display:none;
+	}
+	div.nav.bottom {
+		font-size:18px;
+		display: grid;
+		grid-template-columns: 1fr 10fr 1fr;
+	}
+	div.nav.top {
+		display:block;
+	}
+	div.nav.top div.left,
+	div.nav.top div.center,
+	div.nav.top div.right
+	{
+		width:100%;
+		text-align:left;
+	}
+/*
+	div.nav.top {
+		font-size:18px;
+		display: grid;
+		grid-template-columns: 0fr 4fr 2fr;
+	}
+*/
+	div.nav.top div.center input[type='text'] {
+		width:120px;
+	}
+}

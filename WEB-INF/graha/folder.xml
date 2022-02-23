@@ -1,0 +1,348 @@
+<querys>
+	<header extends="_base.xml">
+		<jndi name="jdbc/graha_sample" />
+		<prop name="logined_user" value="guest" />
+		<prop name="logined_user" value="${session.user_id}" cond="${session.user_id} isNotEmpty" />
+		<prop name="logined_user" value="${header.remote_user}" cond="${header.remote_user} isNotEmpty" />
+		<prop name="mail.save.directory" value="${system.context.root.path}WEB-INF/file/" />
+		<prop name="mail.backup.directory" value="${system.context.root.path}WEB-INF/backup/" />
+	</header>
+	<query id="list" funcType="listAll" label="메일폴더">
+		<header>
+			<style src="../../css/folder.list.css" />
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script><![CDATA[
+var graha_mail_account_id = <xsl:value-of select="/document/props/mail_account.graha_mail_account_id" />;
+var graha_mail_account_type = "<xsl:value-of select="/document/props/mail_account.type" />";
+			]]></script>
+			<script src="../../js/folder.list.js" />
+			<prop name="mail_account" public="true">
+				<sql>
+					select graha_mail_account_id, type
+					from webmua.graha_mail_account 
+					where insert_id = ?
+<tile cond="${param.graha_mail_account_id} isNotEmpty">
+						and graha_mail_account_id = ?
+</tile>
+<tile cond="${param.graha_mail_account_id} isEmpty">
+					order by order_number, type desc, host, email
+					limit 1
+</tile>
+				</sql>
+				<params>
+					<param datatype="varchar" value="prop.logined_user" />
+					<param name="graha_mail_account_id" datatype="int" value="param.graha_mail_account_id" cond="${param.graha_mail_account_id} isNotEmpty" />
+				</params>
+			</prop>
+			<codes>
+				<code name="mail_account">
+					<sql>
+						select graha_mail_account_id, email from webmua.graha_mail_account where insert_id = ?
+						order by order_number, type desc, host, email
+					</sql>
+					<params>
+						<param datatype="varchar" value="prop.logined_user" default="null" />
+					</params>
+				</code>
+			</codes>
+		</header>
+		<commands>
+			<command name="graha_mail_folder">
+				<sql pageSize="15" pageGroupSize="10">
+					select
+						graha_mail_folder_id
+						, name
+						, type
+						, (
+							select count(*) 
+							from webmua.graha_mail 
+							where graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id
+							and status = 'R'
+						) as cnt
+						, default_charset
+						, case
+							when type = 'Inbox' then 0
+							when type = 'Sent' then 1
+							when type = 'Draft' then 2
+							when type = 'Trash' then 3
+							else 4
+						end as order_number
+						, '수정' as update
+						, is_not_fetch
+					from webmua.graha_mail_folder
+					where insert_id = ?
+						and graha_mail_account_id = ?
+					order by 6, 2
+				</sql>
+				<params>
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="graha_mail_account_id" datatype="int" value="param.graha_mail_account_id" default="code.mail_account.firstValue" />
+				</params>
+			</command>
+		</commands>
+		<layout>
+			<top>
+				<center>
+					<search label="검색" path="/folder/list">
+						<params>
+							<param name="graha_mail_account_id" value="graha_mail_account_id" type="select" for="mail_account" />
+							
+						</params>
+					</search>
+				</center>
+			</top>
+			<middle>
+				<tab name="mail_folder">
+					<column label="고유번호" name="graha_mail_folder_id" />
+					<column label="메시지를 가져올지 여부" name="is_not_fetch" />
+					<column label="폴더이름" name="name">
+						<link path="/mail/list">
+							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
+							<param name="graha_mail_folder_id" type="query" value="graha_mail_folder_id" />
+						</link>
+					</column>
+					<column label="폴더유형" name="type" />
+					<column label="수정" name="update">
+						<link path="/folder/insert">
+							<param name="graha_mail_folder_id" type="query" value="graha_mail_folder_id" />
+							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
+						</link>
+					</column>
+					<column label="메시지 갯수" name="cnt">
+						<link path="/mail/list">
+							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
+							<param name="graha_mail_folder_id" type="query" value="graha_mail_folder_id" />
+						</link>
+					</column>
+					<column label="메시지 가져오기" name="fetch_message" />
+				</tab>
+			</middle>
+			<bottom>
+				<left>
+					<link name="insert" label="추가" path="/folder/insert">
+						<params>
+							<param name="graha_mail_account_id" value="graha_mail_account_id" type="param" />
+						</params>
+					</link>
+				</left>
+				<right>
+					<link name="account_list" label="계정관리" path="/account/list" />
+				</right>
+			</bottom>
+		</layout>
+	</query>
+	<query id="exists" funcType="detail" label="메일계정">
+		<header>
+		</header>
+		<commands>
+			<command name="graha_mail_folder">
+				<sql>
+					select * from webmua.graha_mail_folder
+					where insert_id = ? and graha_mail_account_id = ?
+						and name = ?
+<tile cond="${param.graha_mail_folder_id} exists">
+						and graha_mail_folder_id != ?
+</tile>
+				</sql>
+				<params>
+					<param datatype="varchar" value="prop.logined_user" />
+					<param name="graha_mail_account_id" datatype="int" value="param.graha_mail_account_id" />
+					<param name="name" datatype="varchar" value="param.name" />
+					<param name="graha_mail_folder_id" datatype="int" value="param.graha_mail_folder_id" cond="${param.graha_mail_folder_id} exists" />
+				</params>
+			</command>
+		</commands>
+	</query>
+	<query id="insert" funcType="insert" label="메일폴더">
+		<header>
+			<messages>
+				<message name="80001" public="true">폴더이름은 필수 항목입니다!</message>
+				<message name="80002" public="true">중복된 폴더이름이 있습니다!</message>
+				<message name="80003" public="true">변경사항을 저장하시겠습니까?</message>
+				<message name="80004" public="true">정말로 삭제하시겠습니까?</message>
+				<message name="80005" public="true">정말로 삭제하시겠습니까?</message>
+				<message name="80006" code="include">프로그램의 에러가 발생했습니다.  관리자(프로그래머)가 문제를 해결 할 때까지 동일한 에러가 반복될 가능성이 높습니다.  시스템 사용을 중단하시고, 관리자에게 도움을 요청하시기 바랍니다.</message>
+				<message name="80007" ref="80006"/>
+				<message name="80008" ref="80006"/>
+				<message name="80009" ref="80006"/>
+				<message name="80010" ref="80006"/>
+			</messages>
+			<style><![CDATA[
+<xsl:if test="/document/props/mail_account.type != 'imap'">
+table#graha_mail_folder th.is_not_fetch,
+table#graha_mail_folder td.is_not_fetch
+{
+	display:none;
+}
+</xsl:if>
+			]]></style>
+			<style src="../../css/folder.insert.css" />
+			<script name="jquery" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" />
+			<script name="check_submit" src="../../js/folder.insert.check_submit.js" override="true" />
+			<prop name="mail_account" public="true">
+				<sql>
+					select graha_mail_account_id, type
+					from webmua.graha_mail_account 
+					where insert_id = ?
+						and graha_mail_account_id = ?
+				</sql>
+				<params>
+					<param datatype="varchar" value="prop.logined_user" />
+					<param name="graha_mail_account_id" datatype="int" value="param.graha_mail_account_id" />
+				</params>
+			</prop>
+			<codes>
+				<code name="default_charset">
+					<sql>
+						select '' as code, '없음' as name
+						union all
+						(
+							select code, value from webmua.graha_mail_common_code
+							where upper_id in (
+								select graha_mail_common_code_id from webmua.graha_mail_common_code
+								where upper_id = 0
+									and code = 'default_charset'
+							)
+							order by order_number, code
+						)
+					</sql>
+				</code>
+				<code name="graha_mail_folder_type">
+					<sql>
+						select code, value from webmua.graha_mail_common_code
+						where upper_id in (
+							select graha_mail_common_code_id from webmua.graha_mail_common_code
+							where upper_id = 0
+								and code = 'graha_mail_folder_type'
+						)
+						order by order_number, code
+					</sql>
+				</code>
+			</codes>
+		</header>
+		<processors>
+			<processor after="true" type="native" class="kr.graha.sample.webmua.MailMigrationProcessorImpl" method="POST" />
+			<processor after="true" type="native" class="kr.graha.sample.webmua.MailParserProcessorImpl" method="POST" />
+		</processors>
+		<files>
+			<file name="mail_folder.file" path="${prop.mail.save.directory}/folder/${query.graha_mail_folder.graha_mail_folder_id}" append="1" backup="${prop.mail.backup.directory}/folder/${query.graha_mail_folder.graha_mail_folder_id}" />
+			<auth check="${result} > 0">
+				<sql>select count(*) from webmua.graha_mail_folder where insert_id = ? and graha_mail_folder_id = ?</sql>
+				<params>
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					<param name="graha_mail_folder_id" datatype="int" value="param.query.graha_mail_folder.graha_mail_folder_id" />
+				</params>
+			</auth>
+		</files>
+		<validation method="POST">
+			<param name="name" not-null="true" msg="message.80001" />
+			<command check="${result} empty" msg="message.80002">
+				<sql>
+					select name from webmua.graha_mail_folder
+					where insert_id = ? and graha_mail_account_id = ?
+						and name = ?
+<tile cond="${param.graha_mail_folder_id} exists">
+						and graha_mail_folder_id != ?
+</tile>
+				</sql>
+				<params>
+					<param datatype="varchar" value="prop.logined_user" />
+					<param name="graha_mail_account_id" datatype="int" value="param.graha_mail_account_id" />
+					<param name="name" datatype="varchar" value="param.name" />
+					<param name="graha_mail_folder_id" datatype="int" value="param.graha_mail_folder_id" cond="${param.graha_mail_folder_id} exists" />
+				</params>
+			</command>
+		</validation>
+		<tables>
+			<table tableName="webmua.graha_mail_folder" name="graha_mail_folder" label="메일폴더">
+				<column name="graha_mail_folder_id" value="param.graha_mail_folder_id" datatype="int"  primary="true"  insert="sequence.nextval('webmua.graha_mail_folder$graha_mail_folder_id')" />
+				<column name="name" value="param.name" datatype="varchar" />
+				<column name="type" value="param.type" datatype="varchar" />
+				<column name="default_charset" value="param.default_charset" datatype="varchar" />
+				<column name="graha_mail_account_id" value="param.graha_mail_account_id" datatype="int" />
+				<column name="is_not_fetch" value="param.is_not_fetch" datatype="boolean" />
+				<column name="insert_date" only="insert" value="sql.now()" datatype="timestamp" />
+				<column name="insert_id" only="insert" value="prop.logined_user" datatype="varchar" />
+				<column name="insert_ip" only="insert" value="header.remote_addr" datatype="varchar" />
+				<column name="update_date" value="sql.now()" datatype="timestamp" />
+				<column name="update_id" value="prop.logined_user" datatype="varchar" />
+				<column name="update_ip" value="header.remote_addr" datatype="varchar" />
+				<where>
+					<sql>
+						insert_id = ?
+					</sql>
+					<params>
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					</params>
+				</where>
+			</table>
+		</tables>
+		<layout msg="message.80003">
+			<top>
+				<left>
+					<link name="list" label="목록" path="/folder/list">
+						<params>
+							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
+						</params>
+					</link>
+				</left>
+				<center />
+				<right>
+					<link name="save" label="저장" path="/folder/insert" method="post" type="submit" full="true">
+						<params>
+							<param name="graha_mail_folder_id" type="query" value="graha_mail_folder_id" />
+							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
+						</params>
+					</link>
+				</right>
+			</top>
+			<middle>
+				<tab name="graha_mail_folder" label="메일폴더">
+					<row>
+						<column label="폴더유형" name="type" value="type" type="select" for="graha_mail_folder_type" />
+					</row>
+					<row>
+						<column label="기본문자셋" name="default_charset" value="default_charset" type="select" for="default_charset" />
+					</row>
+					<row>
+						<column label="폴더이름" name="name" value="name" />
+					</row>
+					<row>
+						<column label="메시지를 가져오지 않음" name="is_not_fetch" value="is_not_fetch" type="checkbox" val="t" />
+					</row>
+				</tab>
+			</middle>
+			<bottom>
+				<left>
+					<link label="삭제" name="delete" path="/folder/delete" method="post" type="submit" msg="message.80004" test="/document/rows/row/type != 'Inbox' and /document/rows/row/type != 'Sent' and /document/rows/row/type != 'Draft' and /document/rows/row/type != 'Trash'">
+						<params>
+							<param name="graha_mail_folder_id" type="query" value="graha_mail_folder_id" />
+							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
+						</params>
+					</link>
+				</left>
+			</bottom>
+		</layout>
+		<redirect path="/folder/list">
+			<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
+		</redirect>
+	</query>
+	<query id="delete" funcType="delete" label="메일폴더">
+		<tables>
+			<table tableName="webmua.graha_mail_folder" name="graha_mail_folder">
+				<column name="graha_mail_folder_id" primary="true" value="param.graha_mail_folder_id" datatype="int" />
+				<where>
+					<sql>
+						insert_id = ? and type not in ('Inbox', 'Sent', 'Draft', 'Trash')
+					</sql>
+					<params>
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					</params>
+				</where>
+			</table>
+		</tables>
+		<redirect path="/folder/list">
+			<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
+		</redirect>
+	</query>
+</querys>

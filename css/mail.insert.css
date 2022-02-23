@@ -1,0 +1,34 @@
+ul.multitab {
+	display:none;
+}
+table#graha_mail th,
+table#graha_mail_part th
+{
+	width:120px;
+}
+@media only screen and (max-width: 600px) {
+	
+	table#graha_mail_address, 
+	table#graha_mail_address thead, 
+	table#graha_mail_address tbody, 
+	table#graha_mail_address tr
+	{
+		display:block;
+	}
+	table#graha_mail_address th {
+		display:none;
+	}
+	table#graha_mail_address td {
+		display:inline-block;
+		width:100%;
+	}
+	table#graha_mail th.subject {
+		display:none;
+	}
+	table#graha_mail_address input.label {
+		color:#cccccc;
+	}
+	table#graha_mail input.label {
+		color:#cccccc;
+	}
+}

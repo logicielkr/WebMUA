@@ -1,0 +1,64 @@
+form.re input,
+form.re button,
+form.fwd input,
+form.fwd button
+{
+	display:none;
+}
+table#graha_mail th,
+table#graha_mail_part th
+{
+	width:120px;
+}
+table#graha_mail_part td.contents {
+	white-space:pre-wrap;
+	height: 150px;
+}
+ul.multitab,
+h3.graha_mail,
+h3.graha_mail_address,
+h3.graha_mail_part
+{
+	display:none;
+}
+table#graha_mail_address th.type,
+table#graha_mail_address td.type {
+	width:120px;
+}
+table#graha_mail,
+table#graha_mail_address {
+	margin-bottom:15px;
+}
+
+table#graha_mail_part th.content_type,
+table#graha_mail_part td.content_type,
+table#graha_mail_part th.parent_content_type,
+table#graha_mail_part td.parent_content_type,
+table#graha_mail_part th.parent_path,
+table#graha_mail_part td.parent_path,
+table#graha_mail_address th,
+table#graha_mail_address td.email
+{
+	display:none;
+}
+@media only screen and (max-width: 600px) {
+	
+	table#graha_mail_address, 
+	table#graha_mail_address thead, 
+	table#graha_mail_address tbody, 
+	table#graha_mail_address tr
+	{
+		display:block;
+		width:100%;
+	}
+	table#graha_mail_address td.type,
+	table#graha_mail_address td.personal_name,
+	table#graha_mail_address td.email_address {
+		display:none;
+	}
+	table#graha_mail_address td.email
+	{
+		display:inline-block;
+		width:100%;
+	}
+}

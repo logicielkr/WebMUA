@@ -1,0 +1,570 @@
+<querys>
+	<header extends="_base.xml">
+		<jndi name="jdbc/graha_sample" />
+		<prop name="logined_user" value="guest" />
+		<prop name="logined_user" value="${session.user_id}" cond="${session.user_id} isNotEmpty" />
+		<prop name="logined_user" value="${header.remote_user}" cond="${header.remote_user} isNotEmpty" />
+	</header>
+	<query id="list" funcType="listAll" label="메일계정">
+		<header>
+			<style src="../../css/account.list.css" />
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" />
+			<script src="../../js/account.list.js" />
+			<top><![CDATA[
+<noscript style="display:block;width:100%;text-align:center;">
+Javascript가 활성화되지 않은 경우 메시지 가져오기 기능을 사용할 수 없습니다.
+</noscript>
+			]]></top>
+		</header>
+		<commands>
+			<command name="graha_mail_account">
+				<sql>
+					select
+						graha_mail_account_id
+						, graha_mail_account.name
+						, graha_mail_account.email
+						, COALESCE(graha_mail_account_template.type, graha_mail_account.type) as type
+						, (select count(*) from webmua.graha_mail_folder where graha_mail_account.graha_mail_account_id = graha_mail_folder.graha_mail_account_id) as folder_cnt
+						, (
+							select count(*) 
+							from webmua.graha_mail_folder join webmua.graha_mail on graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id
+							where graha_mail_account.graha_mail_account_id = graha_mail_folder.graha_mail_account_id
+								and graha_mail.status = 'R'
+						) as mail_cnt,
+						'상세' as detail
+					from webmua.graha_mail_account
+					left outer join webmua.graha_mail_account_template on graha_mail_account.graha_mail_account_template_id = graha_mail_account_template.graha_mail_account_template_id
+					where graha_mail_account.insert_id = ?
+					order by graha_mail_account.order_number, 4 desc, graha_mail_account.host, graha_mail_account.email
+				</sql>
+				<params>
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+				</params>
+			</command>
+		</commands>
+		<layout>
+			<top>
+				<left>
+					<link name="insert" label="추가" path="/account/insert" />
+				</left>
+			</top>
+			<middle>
+				<tab name="graha_mail_account">
+					<column label="고유번호" name="graha_mail_account_id" />
+					<column label="type" name="type" />
+					<column label="이메일" name="email">
+						<link path="/mail/list">
+							<param name="graha_mail_account_id" type="query" value="graha_mail_account_id" />
+						</link>
+					</column>
+					<column label="별칭" name="name" />
+					<column label="상세" name="detail">
+						<link path="/account/detail">
+							<param name="graha_mail_account_id" type="query" value="graha_mail_account_id" />
+						</link>
+					</column>
+					<column label="폴더갯수" name="folder_cnt">
+						<link path="/folder/list">
+							<param name="graha_mail_account_id" type="query" value="graha_mail_account_id" />
+						</link>
+					</column>
+					<column label="메시지 갯수" name="mail_cnt">
+						<link path="/mail/list">
+							<param name="graha_mail_account_id" type="query" value="graha_mail_account_id" />
+						</link>
+					</column>
+					<column label="메시지 가져오기" name="fetch_message" />
+				</tab>
+			</middle>
+			<bottom>
+			<center>page</center>
+			</bottom>
+		</layout>
+	</query>
+	<query id="insert" funcType="insert" label="메일계정">
+		<header>
+			<messages>
+				<message name="70001" public="true">이메일은 필수 항목입니다!</message>
+				<message name="70002" public="true">변경사항을 저장하시겠습니까?</message>
+			</messages>
+			<style src="../../css/account.insert.css" />
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="../../js/account.insert.js" />
+			<style><![CDATA[
+<!--
+<xsl:if test="/document/rows[@id='graha_mail_account']/row/graha_mail_account_template_id > 0">
+table#graha_mail_account th.type,
+table#graha_mail_account td.type,
+table#graha_mail_account th.host,
+table#graha_mail_account td.host,
+table#graha_mail_account th.encryption_type,
+table#graha_mail_account td.encryption_type,
+table#graha_mail_account th.port,
+table#graha_mail_account td.port,
+table#graha_mail_account th.smtp_host,
+table#graha_mail_account td.smtp_host,
+table#graha_mail_account th.smtp_port,
+table#graha_mail_account td.smtp_port,
+table#graha_mail_account th.smtp_encryption_type,
+table#graha_mail_account td.smtp_encryption_type
+{
+	display:none;
+}
+</xsl:if>
+-->
+			]]></style>
+
+			<prop name="initfolder" value="y" cond="${param.graha_mail_account_id} isEmpty" />
+			<prop name="initfolder" value="${prop.initfolder}y" cond="${param.type} equals 'pop3'" />
+			<codes>
+				<code name="graha_mail_account_template">
+					<sql>
+						select 0 as graha_mail_account_template_id, '직접입력' as name
+						union all
+						(
+							select graha_mail_account_template_id, name 
+							from webmua.graha_mail_account_template 
+							order by order_number, name
+						)
+					</sql>
+				</code>
+				<code name="default_charset">
+					<sql>
+						select '' as code, '없음' as name
+						union all
+						(
+							select code, value from webmua.graha_mail_common_code
+							where upper_id in (
+								select graha_mail_common_code_id from webmua.graha_mail_common_code
+								where upper_id = 0
+									and code = 'default_charset'
+							)
+							order by order_number, code
+						)
+					</sql>
+				</code>
+				<code name="graha_mail_account_type">
+					<sql>
+						select code, value from webmua.graha_mail_common_code
+						where upper_id in (
+							select graha_mail_common_code_id from webmua.graha_mail_common_code
+							where upper_id = 0
+								and code = 'graha_mail_account_type'
+						)
+						order by order_number, code
+					</sql>
+				</code>
+				<code name="encryption_type">
+					<sql>
+						select code, value from webmua.graha_mail_common_code
+						where upper_id in (
+							select graha_mail_common_code_id from webmua.graha_mail_common_code
+							where upper_id = 0
+								and code = 'encryption_type'
+						)
+						order by order_number, code
+					</sql>
+				</code>
+				<code name="leave_on_server">
+					<sql>
+						select code, value from webmua.graha_mail_common_code
+						where upper_id in (
+							select graha_mail_common_code_id from webmua.graha_mail_common_code
+							where upper_id = 0
+								and code = 'leave_on_server'
+						)
+						order by order_number, code
+					</sql>
+				</code>
+				<code name="imap_fetch_type">
+					<sql>
+						select code, value from webmua.graha_mail_common_code
+						where upper_id in (
+							select graha_mail_common_code_id from webmua.graha_mail_common_code
+							where upper_id = 0
+								and code = 'imap_fetch_type'
+						)
+						order by order_number, code
+					</sql>
+				</code>
+				<code name="mail_check_column">
+					<sql>
+						select code, value from webmua.graha_mail_common_code
+						where upper_id in (
+							select graha_mail_common_code_id from webmua.graha_mail_common_code
+							where upper_id = 0
+								and code = 'mail_check_column'
+						)
+						order by order_number, code
+					</sql>
+				</code>
+			</codes>
+			<top><![CDATA[
+<noscript style="display:block;width:100%;text-align:center;">
+이 메시지를 보고 있다면, Javascript를 사용할 수 없는 경우이며, 정상적인 동작을 보장할 수 없으므로 강제로 저장버튼을 클릭하는 것을 삼가해 주시기 바랍니다.
+</noscript>
+			]]></top>
+		</header>
+		<processors>
+			<processor type="query" after="true" method="POST" cond="${prop.initfolder} equals 'yy'">
+				<sql>
+					insert into webmua.graha_mail_folder (
+						graha_mail_folder_id, name, type, graha_mail_account_id, insert_date, insert_id, insert_ip, update_date, update_id, update_ip
+					) values (
+						?, 'Inbox', 'Inbox', ?, now(), ?, ?, now(), ?, ?
+					)
+				</sql>
+				<params>
+					<param name="graha_mail_folder_id" datatype="int" value="sequence.nextval('webmua.graha_mail_folder$graha_mail_folder_id')" />
+					<param name="graha_mail_account_id" datatype="int" value="query.graha_mail_account.graha_mail_account_id" />
+					<param name="insert_id" only="insert" value="prop.logined_user" datatype="varchar" />
+					<param name="insert_ip" only="insert" value="header.remote_addr" datatype="varchar" />
+					<param name="update_id" value="prop.logined_user" datatype="varchar" />
+					<param name="update_ip" value="header.remote_addr" datatype="varchar" />
+				</params>
+			</processor>
+			<processor type="query" after="true" method="POST" cond="${prop.initfolder} equals 'yy'">
+				<sql>
+					insert into webmua.graha_mail_folder (
+						graha_mail_folder_id, name, type, graha_mail_account_id, insert_date, insert_id, insert_ip, update_date, update_id, update_ip
+					) values (
+						?, 'Sent', 'Sent', ?, now(), ?, ?, now(), ?, ?
+					)
+				</sql>
+				<params>
+					<param name="graha_mail_folder_id" datatype="int" value="sequence.nextval('webmua.graha_mail_folder$graha_mail_folder_id')" />
+					<param name="graha_mail_account_id" datatype="int" value="query.graha_mail_account.graha_mail_account_id" />
+					<param name="insert_id" value="prop.logined_user" datatype="varchar" />
+					<param name="insert_ip" value="header.remote_addr" datatype="varchar" />
+					<param name="update_id" value="prop.logined_user" datatype="varchar" />
+					<param name="update_ip" value="header.remote_addr" datatype="varchar" />
+				</params>
+			</processor>
+			<processor type="query" after="true" method="POST" cond="${prop.initfolder} equals 'yy'">
+				<sql>
+					insert into webmua.graha_mail_folder (
+						graha_mail_folder_id, name, type, graha_mail_account_id, insert_date, insert_id, insert_ip, update_date, update_id, update_ip
+					) values (
+						?, 'Draft', 'Draft', ?, now(), ?, ?, now(), ?, ?
+					)
+				</sql>
+				<params>
+					<param name="graha_mail_folder_id" datatype="int" value="sequence.nextval('webmua.graha_mail_folder$graha_mail_folder_id')" />
+					<param name="graha_mail_account_id" datatype="int" value="query.graha_mail_account.graha_mail_account_id" />
+					<param name="insert_id" value="prop.logined_user" datatype="varchar" />
+					<param name="insert_ip" value="header.remote_addr" datatype="varchar" />
+					<param name="update_id" value="prop.logined_user" datatype="varchar" />
+					<param name="update_ip" value="header.remote_addr" datatype="varchar" />
+				</params>
+			</processor>
+			<processor type="query" after="true" method="POST" cond="${prop.initfolder} equals 'yy'">
+				<sql>
+					insert into webmua.graha_mail_folder (
+						graha_mail_folder_id, name, type, graha_mail_account_id, insert_date, insert_id, insert_ip, update_date, update_id, update_ip
+					) values (
+						?, 'Trash', 'Trash', ?, now(), ?, ?, now(), ?, ?
+					)
+				</sql>
+				<params>
+					<param name="graha_mail_folder_id" datatype="int" value="sequence.nextval('webmua.graha_mail_folder$graha_mail_folder_id')" />
+					<param name="graha_mail_account_id" datatype="int" value="query.graha_mail_account.graha_mail_account_id" />
+					<param name="insert_id" value="prop.logined_user" datatype="varchar" />
+					<param name="insert_ip" value="header.remote_addr" datatype="varchar" />
+					<param name="update_id" value="prop.logined_user" datatype="varchar" />
+					<param name="update_ip" value="header.remote_addr" datatype="varchar" />
+				</params>
+			</processor>
+		</processors>
+		<tables>
+			<table tableName="webmua.graha_mail_account" name="graha_mail_account" label="메일계정" encrypt="kr.graha.sample.webmua.EncryptorAESGCMImpl">
+				<column name="graha_mail_account_id" value="param.graha_mail_account_id" datatype="int"  primary="true"  insert="sequence.nextval('webmua.graha_mail_account$graha_mail_account_id')" />
+				<column name="encryption_type" value="param.encryption_type" datatype="varchar" />
+				<column name="host" value="param.host" datatype="varchar" />
+				<column name="port" value="param.port" datatype="int" />
+				<column name="user_name" value="param.user_name" datatype="varchar" />
+				<column name="password" value="param.password" datatype="varchar" encrypt="true" />
+				<column name="leave_on_server" value="param.leave_on_server" datatype="varchar" />
+				<column name="smtp_encryption_type" value="param.smtp_encryption_type" datatype="varchar" />
+				<column name="smtp_host" value="param.smtp_host" datatype="varchar" />
+				<column name="smtp_port" value="param.smtp_port" datatype="int" />
+				<column name="smtp_user_name" value="param.smtp_user_name" datatype="varchar" />
+				<column name="smtp_password" value="param.smtp_password" datatype="varchar" encrypt="true" />
+				<column name="name" value="param.name" datatype="varchar" />
+				<column name="email" value="param.email" datatype="varchar" />
+				<column name="type" value="param.type" datatype="varchar" />
+				<column name="default_charset" value="param.default_charset" datatype="varchar" />
+				<column name="imap_fetch_type" value="param.imap_fetch_type" datatype="char" />
+				<column name="mail_check_column" value="param.mail_check_column" datatype="varchar" />
+				<column name="signature" value="param.signature" datatype="varchar" />
+				<column name="graha_mail_account_template_id" value="param.graha_mail_account_template_id" datatype="int" />
+				<column name="insert_date" only="insert" value="sql.now()" datatype="timestamp" />
+				<column name="insert_id" only="insert" value="prop.logined_user" datatype="varchar" />
+				<column name="insert_ip" only="insert" value="header.remote_addr" datatype="varchar" />
+				<column name="update_date" value="sql.now()" datatype="timestamp" />
+				<column name="update_id" value="prop.logined_user" datatype="varchar" />
+				<column name="update_ip" value="header.remote_addr" datatype="varchar" />
+				<where>
+					<sql>
+						insert_id = ?
+					</sql>
+					<params>
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					</params>
+				</where>
+			</table>
+		</tables>
+		<validation method="POST">
+			<param name="email" not-null="true" msg="message.70001" />
+		</validation>
+		<layout msg="message.70002">
+			<top>
+				<left />
+				<center />
+				<right>
+					<link name="list" label="목록" path="/account/list" />
+					<link name="save" label="저장" path="/account/insert" method="post" type="submit" full="true">
+						<params>
+							<param name="graha_mail_account_id" type="query" value="graha_mail_account_id" />
+						</params>
+					</link>
+				</right>
+			</top>
+			<middle>
+				<tab name="graha_mail_account" label="메일계정">
+					<row>
+						<column label="메일계정" name="graha_mail_account_template_id" value="graha_mail_account_template_id" type="select" for="graha_mail_account_template" />
+						<column label="이메일" name="email" value="email" />
+					</row>
+					<row>
+						<column label="type" name="type" value="type" type="select" for="graha_mail_account_type" />
+						<column label="기본문자셋" name="default_charset" value="default_charset" type="select" for="default_charset" />
+					</row>
+					<row>
+						<column label="Host" name="host" value="host" />
+						<column label="Port" name="port" value="port" />
+					</row>
+					<row>
+						<column label="사용자" name="user_name" value="user_name" />
+						<column label="패스워드" name="password" value="password" />
+					</row>
+					<row>
+						<column label="Host(SMTP)" name="smtp_host" value="smtp_host" />
+						<column label="Port(SMTP)" name="smtp_port" value="smtp_port" />
+					</row>
+					<row>
+						<column label="사용자(SMTP)" name="smtp_user_name" value="smtp_user_name" />
+						<column label="패스워드(SMTP)" name="smtp_password" value="smtp_password" />
+					</row>
+					<row>
+						<column label="암호화" name="encryption_type" value="encryption_type" type="select" for="encryption_type" />
+						<column label="암호화(SMTP)" name="smtp_encryption_type" value="smtp_encryption_type" type="select" for="encryption_type" />
+					</row>
+					<row>
+						<column label="서버에서 이메일을 삭제하는 주기" name="leave_on_server" value="leave_on_server" type="select" for="leave_on_server" />
+						<column label="이메일을 가져오는 방식" name="imap_fetch_type" value="imap_fetch_type" type="select" for="imap_fetch_type" />
+					</row>
+					<row>
+						<column label="별칭" name="name" value="name" />
+						<column label="중복확인컬럼" name="mail_check_column" value="mail_check_column" type="select" for="mail_check_column" />
+					</row>
+					<row>
+						<column label="서명" name="signature" value="signature" type="textarea" colspan="3" />
+					</row>
+				</tab>
+			</middle>
+			<bottom>
+				<right>
+				</right>
+			</bottom>
+		</layout>
+		<redirect path="/account/list" />
+	</query>
+	<query id="graha_mail_account_template" funcType="detail" label="메일계정">
+		<header>
+		</header>
+		<commands>
+			<command name="graha_mail_account_template">
+				<sql>
+					select
+						encryption_type,
+						host,
+						port,
+						smtp_encryption_type,
+						smtp_host,
+						smtp_port,
+						type,
+						default_charset,
+						imap_fetch_type
+					from webmua.graha_mail_account_template
+					where graha_mail_account_template_id = ?
+				</sql>
+				<params>
+					<param name="graha_mail_account_template_id" datatype="int" value="param.graha_mail_account_template_id" />
+				</params>
+			</command>
+		</commands>
+	</query>
+	<query id="detail" funcType="detail" label="메일계정(${/document/rows/row/email})">
+		<header>
+			<messages>
+				<message name="70003" public="true">정말로 삭제하시겠습니까?</message>
+			</messages>
+			<style src="../../css/account.detail.css" />
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="../../js/account.detail.js" />
+		</header>
+		<commands>
+			<command name="graha_mail_account" encrypt="kr.graha.sample.webmua.EncryptorAESGCMImpl">
+				<sql>
+					select
+						graha_mail_account_id
+						, COALESCE(graha_mail_account_template.encryption_type, graha_mail_account.encryption_type) as encryption_type
+						, COALESCE(graha_mail_account_template.host, graha_mail_account.host) as host
+						, COALESCE(graha_mail_account_template.port, graha_mail_account.port) as port
+						, user_name
+						, password
+						, (
+							select value from webmua.graha_mail_common_code
+							where upper_id in (
+								select graha_mail_common_code_id from webmua.graha_mail_common_code
+								where upper_id = 0
+									and code = 'leave_on_server'
+							) and code = graha_mail_account.leave_on_server
+							limit 1
+						) as leave_on_server
+						, COALESCE(graha_mail_account_template.smtp_encryption_type, graha_mail_account.smtp_encryption_type) as smtp_encryption_type
+						, COALESCE(graha_mail_account_template.smtp_host, graha_mail_account.smtp_host) as smtp_host
+						, COALESCE(graha_mail_account_template.smtp_port, graha_mail_account.smtp_port) as smtp_port
+						, smtp_user_name
+						, smtp_password
+						, graha_mail_account.name
+						, email
+						, COALESCE(graha_mail_account_template.type, graha_mail_account.type) as type
+						, COALESCE(graha_mail_account.default_charset, graha_mail_account_template.default_charset) as default_charset
+						, (
+							select value from webmua.graha_mail_common_code
+							where upper_id in (
+								select graha_mail_common_code_id from webmua.graha_mail_common_code
+								where upper_id = 0
+									and code = 'imap_fetch_type'
+							) and code = COALESCE(graha_mail_account.imap_fetch_type, graha_mail_account_template.imap_fetch_type)
+							limit 1
+						) as imap_fetch_type
+						, signature
+						, graha_mail_account_template.name as graha_mail_account_template_name
+						, COALESCE(mail_check_column, 'UID') as mail_check_column
+					from webmua.graha_mail_account
+						left outer join webmua.graha_mail_account_template on graha_mail_account.graha_mail_account_template_id = graha_mail_account_template.graha_mail_account_template_id
+					where graha_mail_account.graha_mail_account_id = ?
+						and graha_mail_account.insert_id = ?
+				</sql>
+				<params>
+					<param default="null" name="graha_mail_account_id" datatype="int" value="param.graha_mail_account_id" />
+					<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+				</params>
+				<decrypt>
+					<column name="password" encrypt="true" />
+					<column name="smtp_password" encrypt="true" />
+				</decrypt>
+			</command>
+		</commands>
+		<layout>
+			<top>
+				<left>
+					<link name="list" label="목록" path="/account/list" />
+				</left>
+				<center />
+				<right>
+					<link name="update" label="수정" path="/account/insert">
+						<params>
+							<param name="graha_mail_account_id" type="query" value="graha_mail_account_id" />
+						</params>
+					</link>
+				</right>
+			</top>
+			<middle>
+				<tab name="graha_mail_account" label="메일계정">
+					
+					<row>
+						<column label="메일계정" name="graha_mail_account_template_name" />
+						<column label="이메일" name="email" />
+					</row>
+					<row>
+						<column label="type" name="type" />
+						<column label="기본문자셋" name="default_charset" />
+					</row>
+					<row>
+						<column label="Host" name="host" />
+						<column label="Port" name="port" />
+					</row>
+					<row>
+						<column label="사용자" name="user_name" />
+						<column label="패스워드" name="password" />
+					</row>
+					<row>
+						<column label="Host(SMTP)" name="smtp_host" />
+						<column label="Port(SMTP)" name="smtp_port" />
+					</row>
+					<row>
+						<column label="사용자(SMTP)" name="smtp_user_name" />
+						<column label="패스워드(SMTP)" name="smtp_password" />
+					</row>
+					<row>
+						<column label="암호화" name="encryption_type" />
+						<column label="암호화(SMTP)" name="smtp_encryption_type" />
+					</row>
+					<row>
+						<column label="서버에서 이메일을 삭제하는 주기" name="leave_on_server" />
+						<column label="이메일을 가져오는 방식" name="imap_fetch_type" />
+					</row>
+					<row>
+						<column label="별칭" name="name" />
+						<column label="중복확인컬럼" name="mail_check_column" />
+					</row>
+					<row>
+						<column label="서명" name="signature" colspan="3" />
+					</row>
+				</tab>
+			</middle>
+			<bottom>
+				<left>
+					<link label="삭제" path="/account/delete" method="post" type="submit" msg="message.70003">
+						<params>
+							<param name="graha_mail_account_id" type="query" value="graha_mail_account_id" />
+						</params>
+					</link>
+				</left>
+			</bottom>
+			
+		</layout>
+	</query>
+	<query id="delete" funcType="delete" label="메일계정">
+		<tables>
+			<table tableName="webmua.graha_mail_account" name="graha_mail_account">
+				<column name="graha_mail_account_id" primary="true" value="param.graha_mail_account_id" datatype="int" />
+				<where>
+					<sql>
+						insert_id = ?
+					</sql>
+					<params>
+						<param name="insert_id" datatype="varchar" value="prop.logined_user" />
+					</params>
+				</where>
+			</table>
+		</tables>
+		<redirect path="/account/list" />
+	</query>
+	<query id="order_number" funcType="query" label="Change Order Number">
+		<header>
+			<messages>
+				<message name="20001">[20001]프로그램의 에러가 발생했습니다.  시스템의 첫 번째 페이지로 돌아가셔서 다시 접속하시면 에러가 나지 않을 가능성이 높습니다.</message>
+				<message name="20002">[20002]프로그램의 에러가 발생했습니다.  관리자(프로그래머)가 문제를 해결 할 때까지 동일한 에러가 반복될 가능성이 높습니다.  시스템 사용을 중단하시고, 관리자에게 도움을 요청하시기 바랍니다.</message>
+			</messages>
+		</header>
+		<commands>
+			<command name="charset" type="native" class="kr.graha.sample.webmua.ApplyGrahaMailAccountOrderNumberProcessorImpl" />
+		</commands>
+		<redirect path="/account/list" />
+	</query>
+</querys>

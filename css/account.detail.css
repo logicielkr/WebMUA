@@ -1,0 +1,12 @@
+table#graha_mail_account th {
+	width:150px;
+}
+form.update,
+form.update input,
+form.update button {
+	display:none;
+}
+table#graha_mail_account td.signature {
+	white-space:pre-wrap;
+	height: 150px;
+}

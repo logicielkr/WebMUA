@@ -1,0 +1,36 @@
+table#mail_folder th.cnt,
+table#mail_folder td.cnt
+{
+	width:120px;
+	text-align:center;
+}
+table#mail_folder td.fetch_message,
+table#mail_folder td.update
+{
+	text-align:center;
+}
+
+table#mail_folder tr:nth-child(odd) {
+	background:#FFFFFF;
+}
+
+table#mail_folder tr:nth-child(even) {
+	background:#F3F3F3;
+}
+
+@media only screen and (max-width: 600px) {
+	table#mail_folder th.cnt,
+	table#mail_folder td.cnt
+	{
+		display:none;
+	}
+}
+
+table#mail_folder th.fetch_message,
+table#mail_folder td.fetch_message,
+table#mail_folder th.graha_mail_folder_id,
+table#mail_folder td.graha_mail_folder_id,
+table#mail_folder th.is_not_fetch,
+table#mail_folder td.is_not_fetch {
+	display:none;
+}

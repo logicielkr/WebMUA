@@ -1,0 +1,55 @@
+table#graha_mail_account td.type,
+table#graha_mail_account td.folder_cnt,
+table#graha_mail_account td.mail_cnt,
+table#graha_mail_account td.fetch_message,
+table#graha_mail_account td.detail
+{
+	text-align:center;
+}
+form.insert,
+form.insert input,
+form.insert button
+{
+	display:none;
+}
+table#graha_mail_account tr:nth-child(odd) {
+	background:#FFFFFF;
+}
+table#graha_mail_account tr:nth-child(even) {
+	background:#F3F3F3;
+}
+
+table#graha_mail_account th.graha_mail_account_id,
+table#graha_mail_account td.graha_mail_account_id,
+table#graha_mail_account th.fetch_message,
+table#graha_mail_account td.fetch_message
+{
+	display:none;
+}
+
+@media only screen and (max-width: 600px) {
+	table#graha_mail_account th.type,
+	table#graha_mail_account td.type,
+	table#graha_mail_account th.name,
+	table#graha_mail_account td.name,
+	table#graha_mail_account th.folder_cnt,
+	table#graha_mail_account td.folder_cnt,
+	table#graha_mail_account th.mail_cnt,
+	table#graha_mail_account td.mail_cnt
+	{
+		display:none;
+	}
+	div.nav.bottom {
+		font-size:18px;
+		display: grid;
+		grid-template-columns: 0fr 1fr 0fr;
+	}
+	div.nav.top {
+		font-size:18px;
+		display: grid;
+		grid-template-columns: 0fr 4fr 2fr;
+	}
+	div.nav.top div.center input[type='text'] {
+		width:120px;
+	}
+}

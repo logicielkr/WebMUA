@@ -1,0 +1,33 @@
+table#graha_mail_account th {
+	width:150px;
+}
+input#insert_submit {
+	display:none;
+}
+@media only screen and (max-width: 600px) {
+	table#graha_mail_account, 
+	table#graha_mail_account thead, 
+	table#graha_mail_account tbody, 
+	table#graha_mail_account tr
+	{
+		display:auto;
+	}
+	table#graha_mail_account tr {
+		height: fill-available;
+	}
+	table#graha_mail_account th {
+		display:inline-block;
+		width:145px;
+		border-top:none;
+		border-bottom: none;
+		height:100%;
+	}
+	table#graha_mail_account td {
+		display:inline-block;
+		width: calc(100% - 155px);
+		width: -moz-calc(100% - 155px);
+		width: -webkit-calc(100% - 155px);
+		border-top:none;
+		border-bottom: none;
+	}
+}
