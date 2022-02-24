@@ -90,7 +90,8 @@
 		<jar destfile="${package.dir}/${app.name}.${app.version}.jar">
 			<fileset dir="${build.dir}" includes="kr/**/*.class"/>
 			<fileset dir="${base.dir}" includes="README.md,LICENSE"/>
-			<fileset dir="${src.dir}" includes="kr/**/*.java"/>
+			<fileset dir="${src.dir}" includes="kr/**/*.java" />
+			<!--fileset dir="${src.dir}" includes="kr/**/*.java" excludes="kr/**/EncryptorAESGCMImpl.java" /-->
 		</jar>
 	</target>
 	<target name="generate-tomcat10" depends="compile">
@@ -110,6 +111,7 @@
 			<fileset dir="${tomcat10.dir}" includes="kr/**/*.class"/>
 			<fileset dir="${base.dir}" includes="README.md,LICENSE"/>
 			<fileset dir="${tomcat10.dir}" includes="kr/**/*.java, kr/**/*.xsl, kr/**/*.xml, kr/**/*.properties"/>
+			<!--fileset dir="${tomcat10.dir}" includes="kr/**/*.java, kr/**/*.xsl, kr/**/*.xml, kr/**/*.properties" excludes="kr/**/EncryptorAESGCMImpl.java" /-->
 		</jar>
 	</target>
 	<target name="package-tomcat10-war" depends="package-tomcat10">
