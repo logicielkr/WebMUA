@@ -7,7 +7,7 @@ $(document).ready(function() {
 	}
 	$("table#graha_mail_account select.mail_check_column").change(function() {
 		if($(this).val() == "MessageID") {
-			alert("이 값을 MessageID로 변경하시면, 서버에서 이메일을 받아올 때 MessageID 가 없는 것은 생략됩니다.");
+			alert(_getMessage("message.70003"));
 		}
 	});
 	$("table#graha_mail_account select.graha_mail_account_template_id").change(function() {
@@ -30,12 +30,16 @@ $(document).ready(function() {
 			loadFromGrahaMailAccountTemplate($("table#graha_mail_account select.graha_mail_account_template_id").val());
 		}
 	});
+	if($("table#graha_mail_account select.type").val() == "store") {
+		hideor(true, "graha_mail_account_template_id", "host", "port", "encryption_type", "smtp_host", "smtp_port", "smtp_encryption_type", "user_name", "password", "smtp_user_name", "smtp_password", "mail_check_column", "signature");
+		hideor(true, "leave_on_server", "imap_fetch_type");
+	}
 	$("table#graha_mail_account select.type").change(function() {
 		if(
 			$(this).val() == "imap" ||
 			$(this).val() == "pop3"
 		) {
-			hideor(false, "host", "port", "encryption_type", "smtp_host", "smtp_port", "smtp_encryption_type", "user_name", "password", "smtp_user_name", "smtp_password", "mail_check_column", "signature");
+			hideor(false, "graha_mail_account_template_id", "host", "port", "encryption_type", "smtp_host", "smtp_port", "smtp_encryption_type", "user_name", "password", "smtp_user_name", "smtp_password", "mail_check_column", "signature");
 		}
 		if($(this).val() == "imap") {
 			hideor(true, "leave_on_server");
