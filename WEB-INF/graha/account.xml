@@ -87,6 +87,7 @@ Javascript가 활성화되지 않은 경우 메시지 가져오기 기능을 사
 			<messages>
 				<message name="70001" public="true">이메일은 필수 항목입니다!</message>
 				<message name="70002" public="true">변경사항을 저장하시겠습니까?</message>
+				<message name="70003" public="true">이 값을 MessageID로 변경하시면, 서버에서 이메일을 받아올 때 MessageID 가 없는 이메일은 생략됩니다.</message>
 			</messages>
 			<style src="../../css/account.insert.css" />
 			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
