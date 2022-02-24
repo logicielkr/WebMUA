@@ -404,7 +404,6 @@ public class MailSendProcessorImpl implements Processor {
 						for(Path file : stream) {
 							if(file.toFile().isFile()) {
 								if(index == 0) {
-//									multipart = new javax.mail.internet.MimeMultipart();
 									multipart = new javax.mail.internet.MimeMultipart("mixed");
 								}
 								javax.mail.internet.MimeBodyPart part = new javax.mail.internet.MimeBodyPart();
@@ -523,3 +522,4 @@ public class MailSendProcessorImpl implements Processor {
 		}
 	}
 }
+
