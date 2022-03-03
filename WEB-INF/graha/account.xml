@@ -10,6 +10,7 @@
 			<style src="../../css/account.list.css" />
 			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
 			<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" />
+			<script src="../../js/order_number.js" />
 			<script src="../../js/account.list.js" />
 			<top><![CDATA[
 <noscript style="display:block;width:100%;text-align:center;">
@@ -413,6 +414,7 @@ table#graha_mail_account td.smtp_encryption_type
 			</messages>
 			<style src="../../css/account.detail.css" />
 			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="../../js/order_number.js" />
 			<script src="../../js/account.detail.js" />
 		</header>
 		<commands>
@@ -562,9 +564,12 @@ table#graha_mail_account td.smtp_encryption_type
 				<message name="20001">[20001]프로그램의 에러가 발생했습니다.  시스템의 첫 번째 페이지로 돌아가셔서 다시 접속하시면 에러가 나지 않을 가능성이 높습니다.</message>
 				<message name="20002">[20002]프로그램의 에러가 발생했습니다.  관리자(프로그래머)가 문제를 해결 할 때까지 동일한 에러가 반복될 가능성이 높습니다.  시스템 사용을 중단하시고, 관리자에게 도움을 요청하시기 바랍니다.</message>
 			</messages>
+			<prop name="table.name" value="webmua.graha_mail_account" />
+			<prop name="table.pk" value="graha_mail_account_id" />
+			<prop name="table.order_column" value="order_number" />
 		</header>
 		<commands>
-			<command name="charset" type="native" class="kr.graha.sample.webmua.ApplyGrahaMailAccountOrderNumberProcessorImpl" />
+			<command name="change_order" type="native" class="kr.graha.sample.processor.ApplyOrderNumberProcessorImpl" />
 		</commands>
 		<redirect path="/account/list" />
 	</query>

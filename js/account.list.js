@@ -51,8 +51,8 @@ function fetch_message(graha_mail_account_id, obj, callback) {
 		}
 	});
 }
+/*
 function change_order(obj) {
-//	console.log($(obj).val());
 	if($(obj).val() == "순서변경") {
 		$("table#graha_mail_account tbody td").each(function(){
 			$(this).css("width", $(this).width() +"px");
@@ -67,7 +67,6 @@ function change_order(obj) {
 		var index = 1;
 		var formData = new FormData();
 		$("table#graha_mail_account tbody td.graha_mail_account_id").each(function() {
-//			console.log($(this).text(), index);
 			formData.append("graha_mail_account_id." + index, $(this).text());
 			formData.append("order_number." + index, index);
 			index++;
@@ -92,23 +91,39 @@ function change_order(obj) {
 		});
 	}
 }
+*/
 $(document).ready(function() {
 	$("form.insert input").add("form.insert button").add("form.insert").show();
 	var exists = false;
-	var accountCount = 0;
+//	var accountCount = 0;
 	$("table#graha_mail_account td.fetch_message").each(function() {
 		if($(this).parent().find("td.type").text() != "store") {
 			$(this).append("<input type='button' value='가져오기' onclick='fetch_message(" + $(this).parent().find("td.graha_mail_account_id").text() + ", this)' />");
 			exists = true;
 		}
-		accountCount++;
+//		accountCount++;
 	});
 	if(exists) {
 		$("table#graha_mail_account td.fetch_message").add("table#graha_mail_account th.fetch_message").show();
 		$("div.nav.top div.right").append("<input type='button' value='모두 가져오기' onclick='fetch_next_message()' />");
 	}
+	/*
 	if("ontouchstart" in document.documentElement) {
-	} else if(accountCount > 0) {
+//	} else if(accountCount > 0) {
+	} else if($("table#graha_mail_account tbody tr").length > 1) {
 		$("div.nav.bottom div.right").append("<input type='button' value='순서변경' onclick='change_order(this)' />");
 	}
+	*/
+	var label = {
+		default:"순서변경",
+		apply:"순서적용",
+		fail:"실패",
+		processing:"진행중"
+	};
+	var table = {
+		pk:"graha_mail_account_id",
+		order_column:"order_number"
+	};
+	var url = "order_number.xml";
+	GrahaCommonOrderNumber.appendButton(url, "graha_mail_account", table, label);
 });
