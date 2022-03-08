@@ -46,6 +46,8 @@ import java.io.File;
 
 /**
  * IMAP 서버에서 이메일을 가져온다.
+ * 이 메소드는 이메일 상세보기(mail/detail.html) 화면에서 호출된다.
+ * IMAP 서버에서 이메일 Header 만 가져온 경우, 이메일 상세보기 에서 이메일 본문을 가져온다.
  * 
  * @author HeonJik, KIM
  
@@ -63,7 +65,6 @@ public class FetchMailFromImapProcessorImpl implements Processor {
 
 /**
  * Graha 가 호출하는 메소드
- * 이메일의 charset 을 변경한다.
  
  * @param request HttpServlet 에 전달된 HttpServletRequest
  * @param response HttpServlet 에 전달된 HttpServletResponse
