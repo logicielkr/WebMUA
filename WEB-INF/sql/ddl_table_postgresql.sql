@@ -299,8 +299,6 @@ COPY webmua.graha_mail_account_template (graha_mail_account_template_id, encrypt
 4	SSL/TSL	pop.naver.com	995	SSL/TSL	smtp.naver.com	465	pop3	MS949	\N	\N	https://www.naver.com/	Naver(POP3)	\N	\N	\N	\N	\N	\N
 5	SSL/TSL	imap.daum.net	993	SSL/TSL	smtp.daum.net	465	imap	MS949	F	\N	https://www.daum.net/	Daum(IMAP)	\N	\N	\N	\N	\N	\N
 6	SSL/TSL	pop.daum.net	995	SSL/TSL	smtp.daum.net	465	pop3	MS949	\N	\N	https://www.daum.net/	Daum(POP3)	\N	\N	\N	\N	\N	\N
-7	SSL/TSL	imap.aol.com	993	SSL/TSL	smtp.aol.com	465	imap	\N	F	\N	https://help.aol.com/articles/how-do-i-use-other-email-applications-to-send-and-receive-my-aol-mail	Aol.(IMAP)	\N	\N	\N	\N	\N	\N
-8	SSL/TSL	pop.aol.com	995	SSL/TSL	smtp.aol.com	465	pop3	\N	\N	\N	https://help.aol.com/articles/how-do-i-use-other-email-applications-to-send-and-receive-my-aol-mail	Aol.(POP3)	\N	\N	\N	\N	\N	\N
 \.
 
 COPY webmua.graha_mail_common_code (graha_mail_common_code_id, code, value, readonly, order_number, upper_id, insert_date, insert_id, insert_ip, update_date, update_id, update_ip) FROM stdin;
@@ -359,4 +357,4 @@ COPY webmua.graha_mail_common_code (graha_mail_common_code_id, code, value, read
 
 SELECT pg_catalog.setval('webmua."graha_mail_common_code$graha_mail_common_code_id"', 51, false);
 
-SELECT pg_catalog.setval('webmua."graha_mail_account_template$graha_mail_account_template_id"', 8, false);
+SELECT pg_catalog.setval('webmua."graha_mail_account_template$graha_mail_account_template_id"', 6, false);
