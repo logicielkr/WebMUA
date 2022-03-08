@@ -44,11 +44,18 @@
 - Language : Java
 - 이 라이브러리는 Apache Commons FileUpload 에서 사용하는 라이브러리이다.
 
-### 2.6. PostgreSQL JDBC Driver (https://jdbc.postgresql.org/)
+### 2.6. Bouncy Castle (https://www.bouncycastle.org/)
+
+- License : MIT (https://www.bouncycastle.org/license.html)
+- Language : Java
+- AES-GCM 암호화를 위해 JDK 1.7 이하에서만 사용한다.
+- 컴파일을 위한 필수 라이브러리이지만, JDK 8 부터는 사용되지 않는다.
+
+### 2.7. PostgreSQL JDBC Driver (https://jdbc.postgresql.org/)
 - License : BSD 2-clause "Simplified" License (https://jdbc.postgresql.org/about/license.html)
 - Language : Java
 
-### 2.7. xdbc (http://graha.kr/)
+### 2.8. xdbc (http://graha.kr/)
 
 - License : LGPLv3 (https://github.com/logicielkr/xdbc/blob/master/LICENSE)
 - GitHUB : https://github.com/logicielkr/xdbc
