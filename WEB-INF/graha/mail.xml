@@ -198,7 +198,7 @@ Javascript가 활성화되어 있지 않은 경우, 메일계정 오른쪽에 �
 							)
 						)
 </tile>
-					order by sent_date desc
+					order by sent_date desc, graha_mail_id desc
 				</sql>
 				<sql_cnt>
 					select count(*) from webmua.graha_mail
