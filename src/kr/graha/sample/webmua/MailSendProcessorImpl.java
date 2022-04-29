@@ -59,7 +59,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import com.sun.mail.smtp.SMTPTransport;
-import javax.activation.FileDataSource;
 import kr.graha.lib.Encryptor;
 import java.util.Date;
 
@@ -407,10 +406,13 @@ public class MailSendProcessorImpl implements Processor {
 									multipart = new javax.mail.internet.MimeMultipart("mixed");
 								}
 								javax.mail.internet.MimeBodyPart part = new javax.mail.internet.MimeBodyPart();
-								javax.activation.DataSource source = new FileDataSource(file.toFile());
+								part.attachFile(file.toFile());
+								/*
+								javax.activation.DataSource source = new javax.activation.FileDataSource(file.toFile());
 								part.setDataHandler(new javax.activation.DataHandler(source));
 								part.setFileName(MimeUtility.encodeText(decodeFileName(file.toUri()), charset, null));
 								part.setHeader("Content-Type", source.getContentType());
+								*/
 								multipart.addBodyPart(part);
 								index++;
 							}
