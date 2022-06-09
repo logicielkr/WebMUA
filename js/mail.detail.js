@@ -123,7 +123,12 @@ function _check(obj) {
 				if(email_address == null || email_address == "") {
 					alert(_getMessage("message.40014"));
 					return false;
-				} else if(email_address.indexOf("@") > 0 && email_address.lastIndexOf(".") > 0 && email_address.lastIndexOf(".") > email_address.indexOf("@")) {
+				} else if(
+					email_address.indexOf(" ") < 0 &&
+					email_address.indexOf("@") > 0 && 
+					email_address.lastIndexOf(".") > 0 && 
+					email_address.lastIndexOf(".") > email_address.indexOf("@")
+				) {
 				} else {
 					alert(_getMessage("message.40015") + "(" + email_address + ")");
 					return false;
