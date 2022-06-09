@@ -262,19 +262,19 @@ public class FetchMailProcessorImpl implements Processor {
 						((String)mailAccount.get("leave_on_server")).equals("0")
 					) {
 						messages[i].setFlag(Flag.DELETED, true);
-					} else if(data != null && !data.containsKey("graha_mail_id")) {
-						if(
-							mailAccount.get("leave_on_server") != null && 
-							!((String)mailAccount.get("leave_on_server")).equals("none")
-						) {
-							long diff = (new Date().getTime()) - ((Timestamp)data.get("insert_date")).getTime();
-							long leave_on_server = Integer.parseInt((String)mailAccount.get("leave_on_server")) * 1000 * 60 * 60 * 24;
-							if(diff > leave_on_server) {
-								messages[i].setFlag(Flag.DELETED, true);
-							}
-						}
 					}
 					con.commit();
+				} else if(data != null && data.containsKey("insert_date")) {
+					if(
+						mailAccount.get("leave_on_server") != null && 
+						!((String)mailAccount.get("leave_on_server")).equals("none")
+					) {
+						long diff = (new Date().getTime()) - ((Timestamp)data.get("insert_date")).getTime();
+						long leave_on_server = Integer.parseInt((String)mailAccount.get("leave_on_server")) * 1000 * 60 * 60 * 24;
+						if(diff > leave_on_server) {
+							messages[i].setFlag(Flag.DELETED, true);
+						}
+					}
 				} else {
 					if(logger.isLoggable(Level.FINEST)) { logger.finest("data is null or not contains graha_mail_id"); }
 					break;
