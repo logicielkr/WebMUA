@@ -279,7 +279,7 @@ table#graha_mail_account td.smtp_encryption_type
 			</processor>
 		</processors>
 		<tables>
-			<table tableName="webmua.graha_mail_account" name="graha_mail_account" label="메일계정" encrypt="kr.graha.sample.webmua.EncryptorAESGCMImpl">
+			<table tableName="webmua.graha_mail_account" name="graha_mail_account" label="메일계정" encrypt="kr.graha.app.encryptor.EncryptorAESGCMImpl">
 				<column name="graha_mail_account_id" value="param.graha_mail_account_id" datatype="int"  primary="true"  insert="sequence.nextval('webmua.graha_mail_account$graha_mail_account_id')" />
 				<column name="encryption_type" value="param.encryption_type" datatype="varchar" />
 				<column name="host" value="param.host" datatype="varchar" />
@@ -418,7 +418,7 @@ table#graha_mail_account td.smtp_encryption_type
 			<script src="../../js/account.detail.js" />
 		</header>
 		<commands>
-			<command name="graha_mail_account" encrypt="kr.graha.sample.webmua.EncryptorAESGCMImpl">
+			<command name="graha_mail_account" encrypt="kr.graha.app.encryptor.EncryptorAESGCMImpl">
 				<sql>
 					select
 						graha_mail_account_id
@@ -569,7 +569,7 @@ table#graha_mail_account td.smtp_encryption_type
 			<prop name="table.order_column" value="order_number" />
 		</header>
 		<commands>
-			<command name="change_order" type="native" class="kr.graha.sample.processor.ApplyOrderNumberProcessorImpl" />
+			<command name="change_order" type="native" class="kr.graha.sample.command.ApplyOrderNumberProcessorImpl" />
 		</commands>
 		<redirect path="/account/list" />
 	</query>

@@ -62,6 +62,7 @@ import com.sun.mail.util.PropUtil;
 import javax.mail.Header;
 import java.util.Enumeration;
 import java.util.ArrayList;
+import kr.graha.app.encryptor.EncryptorAESGCMImpl;
 
 
 /**

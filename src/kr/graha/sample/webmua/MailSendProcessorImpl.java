@@ -62,6 +62,8 @@ import com.sun.mail.smtp.SMTPTransport;
 import kr.graha.lib.Encryptor;
 import java.util.Date;
 
+import kr.graha.app.encryptor.EncryptorAESGCMImpl;
+
 
 /**
  * 이메일을 발송한다.
