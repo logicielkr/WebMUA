@@ -165,7 +165,7 @@ Javascript가 활성화되어 있지 않은 경우, 메일계정 오른쪽에 �
 				<sql pageSize="10" pageGroupSize="10">
 					select
 						graha_mail_id
-						, subject
+						, case when subject is null or trim(subject) = '' then '[제목없음]' else subject end as subject
 						, (
 							select COALESCE(personal_name, email_address) 
 							from webmua.graha_mail_address 
@@ -502,7 +502,7 @@ Javascript가 활성화되어 있지 않은 경우, 메일계정 오른쪽에 �
 			<processor after="true" type="native" class="kr.graha.sample.webmua.ForwardMailProcessorImpl" method="POST" />
 		</processors>
 		<files>
-			<file name="mail.file" path="${prop.mail.save.directory}/attach/${query.graha_mail.graha_mail_id}" after="graha_mail_address" append="3" backup="${prop.mail.backup.directory}/attach/${query.graha_mail.graha_mail_id}" />
+			<file name="mail.file" path="${prop.mail.save.directory}attach/${query.graha_mail.graha_mail_id}" after="graha_mail_address" append="3" backup="${prop.mail.backup.directory}attach/${query.graha_mail.graha_mail_id}" />
 			<auth check="${result} > 0">
 				<sql>select count(*) from webmua.graha_mail where insert_id = ? and graha_mail_id = ?</sql>
 				<params>
@@ -723,7 +723,7 @@ Javascript가 활성화되어 있지 않은 경우, HTML 소스코드가 출력�
 			</command>
 		</commands>
 		<files>
-			<file name="mail.file" path="${prop.mail.save.directory}/attach/${query.graha_mail.graha_mail_id}" after="graha_mail_address" backup="${prop.mail.backup.directory}/attach/${query.graha_mail.graha_mail_id}" />
+			<file name="mail.file" path="${prop.mail.save.directory}attach/${query.graha_mail.graha_mail_id}" after="graha_mail_address" backup="${prop.mail.backup.directory}attach/${query.graha_mail.graha_mail_id}" />
 			<auth check="${result} > 0">
 				<sql>select count(*) from webmua.graha_mail where insert_id = ? and graha_mail_id = ?</sql>
 				<params>
@@ -1003,8 +1003,8 @@ Javascript가 활성화되어 있지 않은 경우, HTML 소스코드가 출력�
 			</table>
 		</tables>
 		<files>
-			<file name="mail.file" path="${prop.mail.save.directory}/attach/${param.graha_mail_id}" backup="${prop.mail.backup.directory}/attach/${param.graha_mail_id}" />
-			<file name="mail.eml" path="${prop.mail.save.directory}/eml/${param.graha_mail_id}" backup="${prop.mail.backup.directory}/eml/${param.graha_mail_id}" />
+			<file name="mail.file" path="${prop.mail.save.directory}attach/${param.graha_mail_id}" backup="${prop.mail.backup.directory}attach/${param.graha_mail_id}" />
+			<file name="mail.eml" path="${prop.mail.save.directory}eml/${param.graha_mail_id}" backup="${prop.mail.backup.directory}eml/${param.graha_mail_id}" />
 		</files>
 		<redirect path="/mail/list">
 			<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
