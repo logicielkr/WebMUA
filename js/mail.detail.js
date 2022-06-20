@@ -9,7 +9,6 @@ $(document).ready(function() {
 				var path = $(this).parent().find("td.parent_path").text();
 				var isHide = false;
 				$("table#graha_mail_part td.parent_path").each(function() {
-//					console.log($(this).text(), path, $(this).parent().find("td.content_type").text());
 					if($(this).text() == path) {
 						if($(this).parent().find("td.content_type").text() == "text/html") {
 							isHide = true;

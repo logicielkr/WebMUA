@@ -69,7 +69,6 @@ function hideor() {
 	}
 }
 function callback(graha_mail_account_template) {
-	console.log(graha_mail_account_template);
 	if(graha_mail_account_template != null && graha_mail_account_template.encryption_type) {
 		$("table#graha_mail_account select.encryption_type").val(graha_mail_account_template.encryption_type);
 	} else {
@@ -142,9 +141,6 @@ function loadFromGrahaMailAccountTemplate(graha_mail_account_template_id) {
 		type: 'GET',
 		success: function(result){
 			var obj = parse_graha_xml_document(result);
-			console.log(obj);
-			console.log(obj.rows);
-			console.log(obj.rows["graha_mail_account_template"]);
 			if(
 				obj && 
 				obj.rows && 

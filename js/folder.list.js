@@ -31,8 +31,6 @@ function fetch_message(graha_mail_folder_id, obj, callback) {
 				callback(obj);
 			}
 			var res = parse_graha_xml_document(result);
-			console.log(new XMLSerializer().serializeToString(result));
-			console.log(JSON.stringify(res));
 			if(res.errors && res.errors.error) {
 				alert(res.errors.error);
 				$(obj).val("실패");
