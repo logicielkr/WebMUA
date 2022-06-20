@@ -18,14 +18,17 @@ var graha_mail_account_type = "<xsl:value-of select="/document/props/mail_accoun
 			<script src="../../js/folder.list.js" />
 			<prop name="mail_account" public="true">
 				<sql>
-					select graha_mail_account_id, type
+					select 
+						graha_mail_account_id, 
+						COALESCE(graha_mail_account_template.type, graha_mail_account.type) as type
 					from webmua.graha_mail_account 
-					where insert_id = ?
+					left outer join webmua.graha_mail_account_template on graha_mail_account.graha_mail_account_template_id = graha_mail_account_template.graha_mail_account_template_id
+					where graha_mail_account.insert_id = ?
 <tile cond="${param.graha_mail_account_id} isNotEmpty">
-						and graha_mail_account_id = ?
+						and graha_mail_account.graha_mail_account_id = ?
 </tile>
 <tile cond="${param.graha_mail_account_id} isEmpty">
-					order by order_number, type desc, host, email
+					order by graha_mail_account.order_number, type desc, graha_mail_account.host, graha_mail_account.email
 					limit 1
 </tile>
 				</sql>
@@ -38,7 +41,7 @@ var graha_mail_account_type = "<xsl:value-of select="/document/props/mail_accoun
 				<code name="mail_account">
 					<sql>
 						select graha_mail_account_id, email from webmua.graha_mail_account where insert_id = ?
-						order by order_number, type desc, host, email
+						order by order_number, 2 desc, type desc, host, email
 					</sql>
 					<params>
 						<param datatype="varchar" value="prop.logined_user" default="null" />
