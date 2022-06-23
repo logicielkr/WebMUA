@@ -567,9 +567,13 @@ table#graha_mail_account td.smtp_encryption_type
 			<prop name="table.name" value="webmua.graha_mail_account" />
 			<prop name="table.pk" value="graha_mail_account_id" />
 			<prop name="table.order_column" value="order_number" />
+			<prop name="table.where_column.count" value="1" />
+			<prop name="table.where_column.name.0" value="insert_id" />
+			<prop name="table.where_column.datatype.0" value="varchar" />
+			<prop name="table.where_column.value.0" value="prop.logined_user" />
 		</header>
 		<commands>
-			<command name="change_order" type="native" class="kr.graha.sample.command.ApplyOrderNumberProcessorImpl" />
+			<command name="change_order" type="native" class="kr.graha.app.command.ApplyOrderNumberProcessorImpl" />
 		</commands>
 		<redirect path="/account/list" />
 	</query>
