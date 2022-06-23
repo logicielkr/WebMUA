@@ -116,7 +116,6 @@ function callback(graha_mail_account_template) {
 	if(graha_mail_account_template != null && graha_mail_account_template.default_charset) {
 		$("table#graha_mail_account select.default_charset").val(graha_mail_account_template.default_charset);
 	} else {
-//		$("table#graha_mail_account select.default_charset").val("");
 	}
 	if(
 		graha_mail_account_template != null &&
@@ -125,7 +124,6 @@ function callback(graha_mail_account_template) {
 	) {
 		$("table#graha_mail_account select.imap_fetch_type").val(graha_mail_account_template.imap_fetch_type);
 	} else {
-//		$("table#graha_mail_account select.imap_fetch_type").val("");
 	}
 }
 function loadFromGrahaMailAccountTemplate(graha_mail_account_template_id) {
