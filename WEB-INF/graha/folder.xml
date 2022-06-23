@@ -134,7 +134,7 @@ var graha_mail_account_type = "<xsl:value-of select="/document/props/mail_accoun
 			</bottom>
 		</layout>
 	</query>
-	<query id="exists" funcType="detail" label="메일계정">
+	<query id="exists" funcType="detail" label="폴더이름 중북 check">
 		<header>
 		</header>
 		<commands>
