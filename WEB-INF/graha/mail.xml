@@ -156,7 +156,7 @@ form.write button
 			</codes>
 			<top><![CDATA[
 <noscript style="display:block;width:100%;text-align:center;">
-Javascript가 활성화되어 있지 않은 경우, 메일계정 오른쪽에 선택 버튼을 클릭하고 나서 다른 버튼(검색, 이메일가져오기, 메일쓰기)를 클릭해야 합니다.
+Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 계정선택 버튼을 클릭해 주세요.
 </noscript>
 			]]></top>
 		</header>
