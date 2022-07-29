@@ -22,7 +22,9 @@ table#graha_mail_account tr:nth-child(even) {
 table#graha_mail_account th.graha_mail_account_id,
 table#graha_mail_account td.graha_mail_account_id,
 table#graha_mail_account th.fetch_message,
-table#graha_mail_account td.fetch_message
+table#graha_mail_account td.fetch_message,
+table#graha_mail_account th.imap_fetch_type,
+table#graha_mail_account td.imap_fetch_type
 {
 	display:none;
 }

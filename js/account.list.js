@@ -53,7 +53,16 @@ $(document).ready(function() {
 	$("form.insert input").add("form.insert button").add("form.insert").show();
 	var exists = false;
 	$("table#graha_mail_account td.fetch_message").each(function() {
-		if($(this).parent().find("td.type").text() != "store") {
+		if(
+			$(this).parent().find("td.type").text() != "store" && 
+			(
+				$(this).parent().find("td.type").text() != "imap" ||
+				(
+					$(this).parent().find("td.imap_fetch_type").text() != "F" &&
+					$(this).parent().find("td.imap_fetch_type").text() != "M"
+				)
+			)
+		) {
 			$(this).append("<input type='button' value='가져오기' onclick='fetch_message(" + $(this).parent().find("td.graha_mail_account_id").text() + ", this)' />");
 			exists = true;
 		}
