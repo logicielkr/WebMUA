@@ -257,8 +257,8 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
 						</link>
 					</column>
-					<column label="보낸사람" name="sender_name" test="/document/props/mail_folder.type != 'Sent'" />
-					<column label="받는사람" name="rcpt_name" test="/document/props/mail_folder.type = 'Sent'" />
+					<column label="보낸사람" name="sender_name" cond="${prop.mail_folder.type} != 'Sent'" />
+					<column label="받는사람" name="rcpt_name" cond="${prop.mail_folder.type} = 'Sent'" />
 					<column label="날짜" name="sent_date" />
 				</tab>
 			</middle>
@@ -553,10 +553,10 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 				</tab>
 				<tab name="graha_mail_part" label="메일 내용">
 					<column name="graha_mail_part_id" value="graha_mail_part_id" type="hidden" />
-					<row test="/document/params[@for='data']/graha_mail_id">
+					<row cond="${param.graha_mail_id} exists">
 						<column label="내용" name="contents" value="contents" type="textarea" islabel="false" />
 					</row>
-					<row test="not(/document/params[@for='data']/graha_mail_id)">
+					<row cond="${param.graha_mail_id} empty">
 						<column label="내용" name="contents" value="prop.mail_account.signature" type="textarea" islabel="false" />
 					</row>
 				</tab>
@@ -603,7 +603,11 @@ Javascript가 활성화되어 있지 않은 경우, HTML 소스코드가 출력�
 			]]></top>
 			<prop name="mail_folder" public="true">
 				<sql>
-					select graha_mail_folder_id, name, type
+					select 
+						graha_mail_folder_id, 
+						name, 
+						type,
+						case when type in ('Sent', 'Draft') then 'false' else 'true' end as is_replay
 					from webmua.graha_mail_folder 
 					where insert_id = ? 
 						and exists (
@@ -759,7 +763,7 @@ Javascript가 활성화되어 있지 않은 경우, HTML 소스코드가 출력�
 							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
 						</params>
 					</link>
-					<link name="update" label="수정" path="/mail/insert" test="/document/props/mail_folder.type = 'Draft'">
+					<link name="update" label="수정" path="/mail/insert" cond="${prop.mail_folder.type} = 'Draft'">
 						<params>
 							<param name="graha_mail_id" type="query" value="graha_mail_id" />
 							<param name="graha_mail_folder_id" type="prop" value="mail_folder.graha_mail_folder_id" />
@@ -798,14 +802,14 @@ Javascript가 활성화되어 있지 않은 경우, HTML 소스코드가 출력�
 			</middle>
 			<bottom>
 				<left>
-					<link name="delete" label="삭제" path="/mail/delete" method="post" type="submit" msg="message.10004" test="/document/props/mail_folder.type = 'Trash'">
+					<link name="delete" label="삭제" path="/mail/delete" method="post" type="submit" msg="message.10004" cond="${prop.mail_folder.type} = 'Trash'">
 						<params>
 							<param name="graha_mail_id" type="query" value="graha_mail_id" />
 							<param name="graha_mail_folder_id" type="prop" value="mail_folder.graha_mail_folder_id" />
 							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
 						</params>
 					</link>
-					<link name="trash" label="휴지통으로" path="/mail/trash" method="post" type="submit" msg="message.10005" test="/document/props/mail_folder.type != 'Trash'">
+					<link name="trash" label="휴지통으로" path="/mail/trash" method="post" type="submit" msg="message.10005" cond="${prop.mail_folder.type} != 'Trash'">
 						<params>
 							<param name="graha_mail_id" type="query" value="graha_mail_id" />
 							<param name="graha_mail_folder_id" type="prop" value="mail_folder.graha_mail_folder_id" />
@@ -814,20 +818,20 @@ Javascript가 활성화되어 있지 않은 경우, HTML 소스코드가 출력�
 					</link>
 				</left>
 				<right>
-					<link name="send" label="이메일전송" path="/mail/send" method="post" type="submit" msg="message.10006" test="/document/props/mail_folder.type = 'Draft'">
+					<link name="send" label="이메일전송" path="/mail/send" method="post" type="submit" msg="message.10006" cond="${prop.mail_folder.type} = 'Draft'">
 						<params>
 							<param name="graha_mail_id" type="query" value="graha_mail_id" />
 							<param name="graha_mail_folder_id" type="prop" value="mail_folder.graha_mail_folder_id" />
 							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
 						</params>
 					</link>
-					<link name="re" label="회신" path="/mail/insert" test="/document/props/mail_folder.type != 'Draft' and /document/props/mail_folder.type != 'Sent'">
+					<link name="re" label="회신" path="/mail/insert" cond="${prop.mail_folder.is_replay} = 'true'">
 						<params>
 							<param name="graha_mail_rid" type="query" value="graha_mail_id" />
 							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
 						</params>
 					</link>
-					<link name="fwd" label="전달" path="/mail/insert" test="/document/props/mail_folder.type != 'Draft' and /document/props/mail_folder.type != 'Sent'">
+					<link name="fwd" label="전달" path="/mail/insert" cond="${prop.mail_folder.is_replay} = 'true'">
 						<params>
 							<param name="graha_mail_fid" type="query" value="graha_mail_id" />
 							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
