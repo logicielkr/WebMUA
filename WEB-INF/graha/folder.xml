@@ -178,6 +178,12 @@ table#graha_mail_folder td.is_not_fetch
 	display:none;
 }
 </xsl:if>
+<xsl:if test="/document/rows/row/type = 'Inbox' or /document/rows/row/type = 'Sent' or /document/rows/row/type = 'Draft' or /document/rows/row/type = 'Trash'">
+div.nav.bottom div.box.left form {
+	display:none;
+}
+</xsl:if>
+
 			]]></style>
 			<style src="../../css/folder.insert.css" />
 			<script name="jquery" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" />
@@ -317,7 +323,7 @@ table#graha_mail_folder td.is_not_fetch
 			</middle>
 			<bottom>
 				<left>
-					<link label="삭제" name="delete" path="/folder/delete" method="post" type="submit" msg="message.80004" test="/document/rows/row/type != 'Inbox' and /document/rows/row/type != 'Sent' and /document/rows/row/type != 'Draft' and /document/rows/row/type != 'Trash'">
+					<link label="삭제" name="delete" path="/folder/delete" method="post" type="submit" msg="message.80004">
 						<params>
 							<param name="graha_mail_folder_id" type="query" value="graha_mail_folder_id" />
 							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
