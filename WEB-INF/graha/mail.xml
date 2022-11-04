@@ -607,7 +607,8 @@ Javascript가 활성화되어 있지 않은 경우, HTML 소스코드가 출력�
 						graha_mail_folder_id, 
 						name, 
 						type,
-						case when type in ('Sent', 'Draft') then 'false' else 'true' end as is_replay
+						case when type in ('Sent', 'Draft') then 'false' else 'true' end as is_replay,
+						case when type in ('Draft') then 'false' else 'true' end as is_forward
 					from webmua.graha_mail_folder 
 					where insert_id = ? 
 						and exists (
@@ -831,7 +832,7 @@ Javascript가 활성화되어 있지 않은 경우, HTML 소스코드가 출력�
 							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
 						</params>
 					</link>
-					<link name="fwd" label="전달" path="/mail/insert" cond="${prop.mail_folder.is_replay} = 'true'">
+					<link name="fwd" label="전달" path="/mail/insert" cond="${prop.mail_folder.is_forward} = 'true'">
 						<params>
 							<param name="graha_mail_fid" type="query" value="graha_mail_id" />
 							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
