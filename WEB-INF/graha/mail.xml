@@ -85,7 +85,12 @@ form.write button
 						where insert_id = ? 
 							and graha_mail_account_id = ?
 							and (
-								exists (select * from webmua.graha_mail where graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id and status = 'R')
+								exists (
+									select * from webmua.graha_mail 
+									where graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id 
+										and status = 'R'
+										and graha_mail.insert_id = graha_mail_folder.insert_id
+								)
 								or name = 'Inbox'
 								or type = 'Inbox'
 							)
@@ -138,7 +143,12 @@ form.write button
 						where insert_id = ? 
 							and graha_mail_account_id = ?
 							and (
-								exists (select * from webmua.graha_mail where graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id and status = 'R')
+								exists (
+									select * from webmua.graha_mail 
+									where graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id 
+										and status = 'R'
+										and graha_mail.insert_id = graha_mail_folder.insert_id
+								)
 								or name = 'Inbox'
 								or type = 'Inbox'
 <tile cond="${param.graha_mail_folder_id} isNotEmpty">
@@ -170,6 +180,7 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 							select COALESCE(personal_name, email_address) 
 							from webmua.graha_mail_address 
 							where graha_mail_address.graha_mail_id = graha_mail.graha_mail_id
+								and graha_mail_address.insert_id = graha_mail.insert_id
 								and type = 'TO'
 							limit 1
 						) as rcpt_name
@@ -177,6 +188,7 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 							select COALESCE(personal_name, email_address) 
 							from webmua.graha_mail_address 
 							where graha_mail_address.graha_mail_id = graha_mail.graha_mail_id
+								and graha_mail_address.insert_id = graha_mail.insert_id
 								and type = 'FROM'
 							limit 1
 						) as sender_name
@@ -187,14 +199,16 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 						and status = 'R'
 <tile cond="${param.search} isNotEmpty">
 						and (
-							subject like '%' || ? || '%' 
+							coalesce(subject, '') like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%'
 							or exists (
 								select * from webmua.graha_mail_address where graha_mail_address.graha_mail_id = graha_mail.graha_mail_id
-								and (personal_name like '%' || ? || '%' or email_address like '%' || ? || '%')
+								and (coalesce(personal_name, '') || ' ' || coalesce(email_address, '')) like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%'
+								and graha_mail_address.insert_id = graha_mail.insert_id
 							)
 							or exists (
 								select * from webmua.graha_mail_part where graha_mail_part.graha_mail_id = graha_mail.graha_mail_id
-								and contents like '%' || ? || '%'
+								and coalesce(contents, '') like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%'
+								and graha_mail_part.insert_id = graha_mail.insert_id
 							)
 						)
 </tile>
@@ -207,14 +221,16 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 						and status = 'R'
 <tile cond="${param.search} isNotEmpty">
 						and (
-							subject like '%' || ? || '%' 
+							coalesce(subject, '') like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%' 
 							or exists (
 								select * from webmua.graha_mail_address where graha_mail_address.graha_mail_id = graha_mail.graha_mail_id
-								and (personal_name like '%' || ? || '%' or email_address like '%' || ? || '%')
+								and (coalesce(personal_name, '') || ' ' || coalesce(email_address, '')) like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%'
+								and graha_mail_address.insert_id = graha_mail.insert_id
 							)
 							or exists (
 								select * from webmua.graha_mail_part where graha_mail_part.graha_mail_id = graha_mail.graha_mail_id
-								and contents like '%' || ? || '%'
+								and coalesce(contents, '') like '%' || REGEXP_REPLACE(?, '^\s+|\s+$', '', 'g') || '%'
+								and graha_mail_part.insert_id = graha_mail.insert_id
 							)
 						)
 </tile>
@@ -320,7 +336,12 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 					where insert_id = ?
 						and graha_mail_account_id = ?
 						and (
-							exists (select * from webmua.graha_mail where graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id and status = 'R')
+							exists (
+								select * from webmua.graha_mail 
+								where graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id 
+									and status = 'R'
+									and graha_mail.insert_id = graha_mail_folder.insert_id
+							)
 							or name = 'Inbox'
 							or type = 'Inbox'
 						)
@@ -456,8 +477,10 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 							from webmua.graha_mail
 							join webmua.graha_mail_folder on graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id
 							where graha_mail.graha_mail_id = graha_mail_address.graha_mail_id
-								and graha_mail_folder.insert_id = ? and graha_mail_folder.type = 'Draft'
+								and graha_mail_folder.insert_id = ? 
+								and graha_mail_folder.type = 'Draft'
 								and graha_mail.insert_id = ?
+								and graha_mail.insert_id = graha_mail_address.insert_id
 						)
 					</sql>
 					<params>
@@ -488,6 +511,7 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 							where graha_mail.graha_mail_id = graha_mail_part.graha_mail_id
 								and graha_mail_folder.insert_id = ? and graha_mail_folder.type = 'Draft'
 								and graha_mail.insert_id = ?
+								and graha_mail.insert_id = graha_mail_part.insert_id
 						)
 					</sql>
 					<params>
@@ -612,7 +636,10 @@ Javascript가 활성화되어 있지 않은 경우, HTML 소스코드가 출력�
 					from webmua.graha_mail_folder 
 					where insert_id = ? 
 						and exists (
-							select * from webmua.graha_mail where graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id and graha_mail_id = ?
+							select * from webmua.graha_mail 
+							where graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id 
+								and graha_mail_id = ?
+								and graha_mail.insert_id = graha_mail_folder.insert_id
 						)
 				</sql>
 				<params>
