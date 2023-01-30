@@ -358,3 +358,42 @@ COPY webmua.graha_mail_common_code (graha_mail_common_code_id, code, value, read
 SELECT pg_catalog.setval('webmua."graha_mail_common_code$graha_mail_common_code_id"', 51, false);
 
 SELECT pg_catalog.setval('webmua."graha_mail_account_template$graha_mail_account_template_id"', 6, false);
+
+/**
+ * pg_bigm 설치에 대해서는 다음의 글을 참고하라.
+ * //logiciel.kr/graha/article/detail.html?contents_id=3078&article_id=3134
+
+CREATE EXTENSION IF NOT EXISTS pg_bigm;
+
+CREATE EXTENSION IF NOT EXISTS btree_gin;
+
+CREATE INDEX "graha_mail_address$graha_mail_id$insert_id$personal_name$email"
+ON webmua.graha_mail_address
+USING gin (graha_mail_id, insert_id, (((COALESCE(personal_name, ''::text) || ' '::text) || COALESCE(email_address, ''::text))) gin_bigm_ops);
+
+CREATE INDEX "graha_mail_part$graha_mail_id$title$insert_id$contents"
+ON webmua.graha_mail_part
+USING gin (graha_mail_id, insert_id, COALESCE(contents, ''::text) gin_bigm_ops);
+
+CREATE INDEX "graha_mail$graha_mail_folder_id$insert_id$status$subject"
+ON webmua.graha_mail
+USING gin (graha_mail_folder_id, insert_id, status, COALESCE(subject, ''::text) gin_bigm_ops);
+*/
+
+/**
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE EXTENSION IF NOT EXISTS btree_gin;
+
+CREATE INDEX "graha_mail_address$graha_mail_id$insert_id$personal_name$email"
+ON webmua.graha_mail_address
+USING gin (graha_mail_id, insert_id, (((COALESCE(personal_name, ''::text) || ' '::text) || COALESCE(email_address, ''::text))) gin_trgm_ops);
+
+CREATE INDEX "graha_mail_part$graha_mail_id$title$insert_id$contents"
+ON webmua.graha_mail_part
+USING gin (graha_mail_id, insert_id, COALESCE(contents, ''::text) gin_trgm_ops);
+
+CREATE INDEX "graha_mail$graha_mail_folder_id$insert_id$status$subject"
+ON webmua.graha_mail
+USING gin (graha_mail_folder_id, insert_id, status, COALESCE(subject, ''::text) gin_trgm_ops);
+*/
