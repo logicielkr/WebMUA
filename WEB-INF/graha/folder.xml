@@ -22,7 +22,8 @@ var graha_mail_account_type = "<xsl:value-of select="/document/props/mail_accoun
 						graha_mail_account_id, 
 						COALESCE(graha_mail_account_template.type, graha_mail_account.type) as type
 					from webmua.graha_mail_account 
-					left outer join webmua.graha_mail_account_template on graha_mail_account.graha_mail_account_template_id = graha_mail_account_template.graha_mail_account_template_id
+						left outer join webmua.graha_mail_account_template 
+							on graha_mail_account.graha_mail_account_template_id = graha_mail_account_template.graha_mail_account_template_id
 					where graha_mail_account.insert_id = ?
 <tile cond="${param.graha_mail_account_id} isNotEmpty">
 						and graha_mail_account.graha_mail_account_id = ?
@@ -60,7 +61,8 @@ var graha_mail_account_type = "<xsl:value-of select="/document/props/mail_accoun
 							select count(*) 
 							from webmua.graha_mail 
 							where graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id
-							and status = 'R'
+								and status = 'R'
+								and graha_mail.insert_id = graha_mail_folder.insert_id
 						) as cnt
 						, default_charset
 						, case

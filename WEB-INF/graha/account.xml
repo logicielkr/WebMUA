@@ -29,14 +29,18 @@ Javascript가 활성화되지 않은 경우 메시지 가져오기 기능을 사
 						, (select count(*) from webmua.graha_mail_folder where graha_mail_account.graha_mail_account_id = graha_mail_folder.graha_mail_account_id) as folder_cnt
 						, (
 							select count(*) 
-							from webmua.graha_mail_folder join webmua.graha_mail on graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id
+							from webmua.graha_mail_folder 
+								join webmua.graha_mail 
+									on graha_mail.graha_mail_folder_id = graha_mail_folder.graha_mail_folder_id
+										and graha_mail.insert_id = graha_mail_folder.insert_id
 							where graha_mail_account.graha_mail_account_id = graha_mail_folder.graha_mail_account_id
 								and graha_mail.status = 'R'
 						) as mail_cnt,
 						COALESCE(graha_mail_account.imap_fetch_type, graha_mail_account_template.imap_fetch_type) as imap_fetch_type,
 						'상세' as detail
 					from webmua.graha_mail_account
-					left outer join webmua.graha_mail_account_template on graha_mail_account.graha_mail_account_template_id = graha_mail_account_template.graha_mail_account_template_id
+						left outer join webmua.graha_mail_account_template 
+							on graha_mail_account.graha_mail_account_template_id = graha_mail_account_template.graha_mail_account_template_id
 					where graha_mail_account.insert_id = ?
 					order by graha_mail_account.order_number, 4 desc, graha_mail_account.host, graha_mail_account.email
 				</sql>
