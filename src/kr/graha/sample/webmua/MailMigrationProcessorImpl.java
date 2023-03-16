@@ -225,6 +225,14 @@ public class MailMigrationProcessorImpl implements Processor {
 		} catch(IOException e) {
 			prop = null;
 			throw e;
+		} finally {
+			if(is != null) {
+				try {
+					is.close();
+				} catch(IOException e) {
+					throw e;
+				}
+			}
 		}
 		if(prop == null) {
 			System.err.println("Invalid " + propFileName);
@@ -255,6 +263,11 @@ public class MailMigrationProcessorImpl implements Processor {
 			
 			MailParserProcessorImpl parser = new MailParserProcessorImpl();
 			parser.execute(params, con);
+			try {
+				con.close();
+			} catch(SQLException e) {
+				throw e;
+			}
 		}
 	}
 /**
