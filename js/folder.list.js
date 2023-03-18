@@ -5,8 +5,8 @@ function fetch_next_message(obj) {
 		nextobj = $(obj).parent().parent().next().find("td.fetch_message input")[0];
 		graha_mail_folder_id = $(obj).parent().parent().next().find("td.graha_mail_folder_id").text();
 	} else {
-		nextobj = $("table#mail_folder td.fetch_message input").first()[0];
-		graha_mail_folder_id = $("table#mail_folder td.graha_mail_folder_id").first().text();
+		nextobj = $("table#graha_mail_folder td.fetch_message input").first()[0];
+		graha_mail_folder_id = $("table#graha_mail_folder td.graha_mail_folder_id").first().text();
 	}
 	if(nextobj && graha_mail_folder_id != null && graha_mail_folder_id != "") {
 		fetch_message(graha_mail_folder_id, nextobj, fetch_next_message);
@@ -52,7 +52,7 @@ function fetch_message(graha_mail_folder_id, obj, callback) {
 }
 $(document).ready(function() {
 	var exists = false;
-	$("table#mail_folder td.fetch_message").each(function() {
+	$("table#graha_mail_folder td.fetch_message").each(function() {
 		if(
 			$(this).parent().find("td.is_not_fetch").text() != "t" &&
 			(
@@ -69,7 +69,7 @@ $(document).ready(function() {
 		}
 	});
 	if(exists) {
-		$("table#mail_folder td.fetch_message").add("table#mail_folder th.fetch_message").show();
+		$("table#graha_mail_folder td.fetch_message").add("table#graha_mail_folder th.fetch_message").show();
 		$("div.nav.top div.right").append("<input type='button' value='모두 가져오기' onclick='fetch_next_message()' />");
 	}
 });
