@@ -64,6 +64,9 @@ import java.util.Date;
 
 import kr.graha.app.encryptor.EncryptorAESGCMImpl;
 
+import kr.graha.sample.webmua.interfaces.MessageProcessor;
+import java.lang.reflect.InvocationTargetException;
+
 
 /**
  * 이메일을 발송한다.
@@ -150,7 +153,7 @@ public class MailSendProcessorImpl implements Processor {
 			);
 			
 			Session session = Session.getInstance(props, null);
-			MimeMessage msg = getMessage(mailAccount, params, con, session);
+			MimeMessage msg = getMessageWithMessageProcessor(mailAccount, params, con, session);
 			if(msg != null) {
 				save(msg, params);
 				transport = new SMTPTransport(session, urln);
@@ -289,6 +292,41 @@ public class MailSendProcessorImpl implements Processor {
 			if(logger.isLoggable(Level.SEVERE)) { logger.warning(LOG.toString(e)); }
 			return uri.toString().substring(uri.toString().lastIndexOf("/")+1);
 		}
+	}
+	public MimeMessage getMessageWithMessageProcessor(
+		HashMap mailAccount, Record params, Connection con, Session session
+	) throws 
+		AddressException, 
+		UnsupportedEncodingException, 
+		SQLException, 
+		MessagingException
+	{
+		MimeMessage msg = getMessage(mailAccount, params, con, session);
+		if(params.hasKey("prop.message.processor")) {
+			if(params.isArray("prop.message.processor")) {
+				List list = params.getArray("prop.message.processor");
+				if(list != null) {
+					for(int i = 0; i < list.size(); i++) {
+						msg = executeMessageProcessor(msg, params, (String)list.get(i));
+					}
+				}
+			} else {
+				msg = executeMessageProcessor(msg, params, params.getString("prop.message.processor"));
+			}
+		}
+		return msg;
+	}
+	public MimeMessage executeMessageProcessor(MimeMessage msg, Record params, String messageProcessor) throws MessagingException {
+		MessageProcessor mp = null;
+		try {
+			mp = (MessageProcessor)Class.forName(messageProcessor).getConstructor().newInstance();
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException e) {
+			if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
+		}
+		if(mp != null) {
+			return mp.execute(msg, params);
+		}
+		return msg;
 	}
 /**
  * 데이타베이스 및 파일에서 이메일(MimeMessage 객체)을 조합한다.
@@ -444,6 +482,8 @@ public class MailSendProcessorImpl implements Processor {
 				} else {
 					if(contents != null) {
 						msg.setText(contents, charset, "plain");
+					} else {
+						msg.setText("", charset, "plain");
 					}
 				}
 			} else {

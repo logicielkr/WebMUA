@@ -374,7 +374,8 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 			<style src="../../css/mail.insert.css" />
 			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
 			<script src="https://unpkg.com/@ungap/url-search-params@0.2.2/min.js" />
-			<script src="../../js/mail.insert.js" name="check_submit" override="true" />
+			<script src="../../js/mail.insert.js" />
+			<script src="../../js/mail.insert.check_submit.js" name="check_submit" override="true" />
 			<codes>
 				<code name="graha_mail_address_type">
 					<sql>

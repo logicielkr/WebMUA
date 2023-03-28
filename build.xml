@@ -6,6 +6,8 @@
 	<property name = "app.version" value = "0.9.0.0" />
 	<property name = "tomcat10.dir" value = "${base.dir}/tomcat10"/>
 	<property name = "package.dir" value = "${base.dir}/package" />
+	<property name = "dkimforjavamail.java8.compatible.jar" value = "DKIMforJavaMail-java8-compatible.jar"/>
+	<property name = "dkim.mail.processor.jar" value = "${app.name}-dkim-mail-processor.${app.version}.jar"/>
 	<presetdef name="javac">
 		<javac includeantruntime="false" />
 	</presetdef>
@@ -20,7 +22,10 @@
 		<pathelement path = "/opt/java/lib/graha/graha.0.5.0.6.jar" />
 		<pathelement path = "/opt/java/lib/graha/graha-extension.0.5.0.6.jar" />
 		<pathelement path = "/opt/java/lib/javamail/javax.mail.jar" />
+		<pathelement path = "/opt/java/lib/dkimforjavamail/DKIMforJavaMail.jar" />
+		<!--
 		<pathelement path = "/opt/java/lib/javamail/activation-1.1.1.jar" />
+		-->
 		<pathelement path = "/opt/java/lib/bouncy_castle/bcprov-jdk15to18-169.jar" />
 	</path>
 	<path id = "tomcat10-classpath">
@@ -34,7 +39,10 @@
 		<pathelement path = "/opt/java/lib/graha/graha.0.5.0.6-tomcat10.jar" />
 		<pathelement path = "/opt/java/lib/graha/graha-extension.0.5.0.6-tomcat10.jar" />
 		<pathelement path = "/opt/java/lib/javamail/javax.mail.jar" />
+		<pathelement path = "/opt/java/lib/dkimforjavamail/DKIMforJavaMail.jar" />
+		<!--
 		<pathelement path = "/opt/java/lib/javamail/activation-1.1.1.jar" />
+		-->
 		<pathelement path = "/opt/java/lib/bouncy_castle/bcprov-jdk15to18-169.jar" />
 	</path>
 	<target name="depends">
@@ -90,12 +98,22 @@
 	</target>
 	<target name="package" depends="compile">
 		<jar destfile="${package.dir}/${app.name}.${app.version}.jar">
-			<fileset dir="${build.dir}" includes="kr/**/*.class"/>
-			<fileset dir="${base.dir}" includes="README.md,LICENSE"/>
-			<fileset dir="${src.dir}" includes="kr/**/*.java" />
+			<fileset dir="${build.dir}" includes="kr/**/*.class" excludes="kr/**/DKIMSignMessageProcessor.class" />
+			<fileset dir="${base.dir}" includes="README.md,LICENSE" />
+			<fileset dir="${src.dir}" includes="kr/**/*.java" excludes="kr/**/DKIMSignMessageProcessor.java" />
 			<!--fileset dir="${src.dir}" includes="kr/**/*.java" excludes="kr/**/EncryptorAESGCMImpl.java" /-->
 		</jar>
+		<jar destfile="${package.dir}/${dkimforjavamail.java8.compatible.jar}">
+			<fileset dir="${build.dir}" includes="sun/**/*.class"/>
+			<fileset dir="${base.dir}" includes="README.md,LICENSE"/>
+			<fileset dir="${src.dir}" includes="sun/**/*.java" />
+		</jar>
+		<jar destfile="${package.dir}/${dkim.mail.processor.jar}">
+			<fileset dir="${build.dir}" includes="kr/**/DKIMSignMessageProcessor.class" />
+			<fileset dir="${src.dir}" includes="kr/**/DKIMSignMessageProcessor.java" />
+		</jar>
 	</target>
+	
 	<target name="generate-tomcat10" depends="compile">
 		<java classname="kr.graha.util.Converter" fork="true">
 			<arg value="${base.dir}" />
@@ -110,10 +128,18 @@
 	</target>
 	<target name="package-tomcat10" depends="compile-tomcat10">
 		<jar destfile="${package.dir}/${app.name}.${app.version}-tomcat10.jar">
-			<fileset dir="${tomcat10.dir}" includes="kr/**/*.class"/>
-			<fileset dir="${base.dir}" includes="README.md,LICENSE"/>
-			<fileset dir="${tomcat10.dir}" includes="kr/**/*.java, kr/**/*.xsl, kr/**/*.xml, kr/**/*.properties"/>
-			<!--fileset dir="${tomcat10.dir}" includes="kr/**/*.java, kr/**/*.xsl, kr/**/*.xml, kr/**/*.properties" excludes="kr/**/EncryptorAESGCMImpl.java" /-->
+			<fileset dir="${tomcat10.dir}" includes="kr/**/*.class"  excludes="kr/**/DKIMSignMessageProcessor.class" />
+			<fileset dir="${base.dir}" includes="README.md,LICENSE" />
+			<fileset dir="${tomcat10.dir}" includes="kr/**/*.java" excludes="kr/**/DKIMSignMessageProcessor.java" />
+			<!--fileset dir="${tomcat10.dir}" includes="kr/**/*.java" excludes="kr/**/EncryptorAESGCMImpl.java" /-->
+		</jar>
+		<jar destfile="${package.dir}/${dkimforjavamail.java8.compatible.jar}">
+			<fileset dir="${tomcat10.dir}" includes="sun/**/*.class"/>
+			<fileset dir="${tomcat10.dir}" includes="sun/**/*.java" />
+		</jar>
+		<jar destfile="${package.dir}/${dkim.mail.processor.jar}">
+			<fileset dir="${tomcat10.dir}" includes="kr/**/DKIMSignMessageProcessor.class" />
+			<fileset dir="${tomcat10.dir}" includes="kr/**/DKIMSignMessageProcessor.java" />
 		</jar>
 	</target>
 	<target name="package-tomcat10-war" depends="package-tomcat10">
