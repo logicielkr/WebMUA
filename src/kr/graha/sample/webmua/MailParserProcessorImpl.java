@@ -522,6 +522,37 @@ public class MailParserProcessorImpl implements Processor {
 		DB.execute(con, null, sql, param);
 	}
 /**
+ * ParseException 을 처리한다.
+ * content type 이 multipart/alternative 이고, boundary 도 정의되어 있지만,
+ * 본문에 boundary 가 없는 메시지를 처리한다.
+
+ * @param part 이메일 본문
+ * @param error javax.mail.internet.ParseException
+ */
+	private Object handleError(
+		javax.mail.Part part,
+		javax.mail.internet.ParseException error
+	) {
+		if(part instanceof MimeMessage) {
+			try {
+				String contentType = part.getContentType();
+				if(
+					contentType != null &&
+					contentType.startsWith("multipart/alternative") &&
+					error.getMessage() != null &&
+					error.getMessage().equals("Missing start boundary")
+				) {
+					part.removeHeader("Content-Type");
+					Object content = part.getContent();
+					return content;
+				}
+			} catch (MessagingException | IOException e) {
+				return null;
+			}
+		}
+		return null;
+	}
+/**
  * 이메일 본문을 데이타베이스에, 혹은 첨부파일을 저장한다.
  * 이메일이 여러 개의 part로 구성된 경우 재귀호출한다.
  
@@ -552,12 +583,21 @@ public class MailParserProcessorImpl implements Processor {
 			parentType = parentType.substring(0, parentType.indexOf(";"));
 		}
 		Object content = null;
+		boolean parseException = false;
+		String beforeContentType = null;
 		try {
+			beforeContentType = part.getContentType();
 			content = part.getContent();
 		} catch(java.io.UnsupportedEncodingException e) {
 			content = null;
 		} catch(javax.mail.internet.ParseException e) {
-			return;
+			content = handleError(part, e);
+			if(content == null) {
+				return;
+			} else {
+				parseException = true;
+				part.removeHeader("Content-Type");
+			}
 		}
 		if(content == null) {
 			String contentType = part.getContentType();
@@ -581,7 +621,11 @@ public class MailParserProcessorImpl implements Processor {
 			Multipart multi = (Multipart)content;
 			for (int i = 0; i < multi.getCount(); i++) {
 				javax.mail.Part p = multi.getBodyPart(i);
-				parse(p, mailInfo, part.getContentType(), path + "_" + i, con, params, mailSaveDirectory, mailBackupDirectory);
+				if(parseException) {
+					parse(p, mailInfo, beforeContentType, path + "_" + i, con, params, mailSaveDirectory, mailBackupDirectory);
+				} else {
+					parse(p, mailInfo, part.getContentType(), path + "_" + i, con, params, mailSaveDirectory, mailBackupDirectory);
+				}
 			}
 		} else if(part.isMimeType("message/rfc822")) {
 			InputStream is = part.getInputStream();
@@ -591,7 +635,11 @@ public class MailParserProcessorImpl implements Processor {
 				Multipart multi = (Multipart)mime.getContent();
 				for (int i = 0; i < multi.getCount(); i++) {
 					javax.mail.Part p = multi.getBodyPart(i);
-					parse(p, mailInfo, part.getContentType(), path + "_" + i, con, params, mailSaveDirectory, mailBackupDirectory);
+					if(parseException) {
+						parse(p, mailInfo, beforeContentType, path + "_" + i, con, params, mailSaveDirectory, mailBackupDirectory);
+					} else {
+						parse(p, mailInfo, part.getContentType(), path + "_" + i, con, params, mailSaveDirectory, mailBackupDirectory);
+					}
 				}
 			} else if(mime.getContent() instanceof String) {
 				String contentType = mime.getContentType();
@@ -612,7 +660,11 @@ public class MailParserProcessorImpl implements Processor {
 					savePart(contentType, part.getDisposition(), contentString, mailInfo, parentType, path, con, params);
 				}
 			} else {
-				parse((javax.mail.Part)mime.getContent(), mailInfo, part.getContentType(), path + "_0", con, params, mailSaveDirectory, mailBackupDirectory);
+				if(parseException) {
+					parse((javax.mail.Part)mime.getContent(), mailInfo, beforeContentType, path + "_0", con, params, mailSaveDirectory, mailBackupDirectory);
+				} else {
+					parse((javax.mail.Part)mime.getContent(), mailInfo, part.getContentType(), path + "_0", con, params, mailSaveDirectory, mailBackupDirectory);
+				}
 			}
 		} else if(part.isMimeType("message/delivery-status")) {
 			InputStream is = part.getInputStream();
@@ -629,7 +681,12 @@ public class MailParserProcessorImpl implements Processor {
 		} else if((part.getDisposition() != null && part.getDisposition().equalsIgnoreCase("attachment"))) {
 			saveFile(part, mailInfo, mailSaveDirectory, mailBackupDirectory);
 		} else if(content instanceof InputStream) {
-			String contentType = part.getContentType();
+			String contentType = null;
+			if(parseException) {
+				contentType = beforeContentType;
+			} else {
+				contentType = part.getContentType();
+			}
 			if(part.getFileName() != null) {
 				saveFile(part, mailInfo, mailSaveDirectory, mailBackupDirectory);
 			} else {
@@ -653,7 +710,12 @@ public class MailParserProcessorImpl implements Processor {
 			}
 		} else {
 			if(content != null && content.toString() != null && !content.toString().trim().equals("")) {
-				String contentType = part.getContentType();
+				String contentType = null;
+				if(parseException) {
+					contentType = beforeContentType;
+				} else {
+					contentType = part.getContentType();
+				}
 				
 				if(part.isMimeType("text/html")) {
 					contentType = "text/html";
