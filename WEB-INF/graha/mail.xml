@@ -1,9 +1,5 @@
 <querys>
 	<header extends="_base.xml">
-		<jndi name="jdbc/graha_sample" />
-		<prop name="logined_user" value="guest" />
-		<prop name="logined_user" value="${session.user_id}" cond="${session.user_id} isNotEmpty" />
-		<prop name="logined_user" value="${header.remote_user}" cond="${header.remote_user} isNotEmpty" />
 		<prop name="mail.save.directory" value="${system.context.root.path}WEB-INF/file/" />
 		<prop name="mail.backup.directory" value="${system.context.root.path}WEB-INF/backup/" />
 	</header>
