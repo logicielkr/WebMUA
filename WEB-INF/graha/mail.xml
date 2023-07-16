@@ -10,8 +10,8 @@
 			</messages>
 			<style src="../../css/mail.list.css" />
 			<style src="../../css/mail.list.nav.css" name="default.nav" override="true" />
-			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
-			<script src="https://unpkg.com/@ungap/url-search-params@0.2.2/min.js" />
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="//unpkg.com/@ungap/url-search-params@0.2.2/min.js" />
 			<script src="../../js/mail.list.js" />
 			<style><![CDATA[
 <xsl:if test="not(/document/code[@name='mail_account']/option)">
@@ -267,6 +267,7 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 							<param name="graha_mail_id" type="query" value="graha_mail_id" />
 							<param name="graha_mail_folder_id" type="param" value="graha_mail_folder_id" />
 							<param name="graha_mail_account_id" type="param" value="graha_mail_account_id" />
+							<param name="page" type="param" value="page" />
 						</link>
 					</column>
 					<column label="보낸사람" name="sender_name" cond="${prop.mail_folder.type} != 'Sent'" />
@@ -368,8 +369,8 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 				<message name="90004">[90005]프로그램의 에러가 발생했습니다.  관리자(프로그래머)가 문제를 해결 할 때까지 동일한 에러가 반복될 가능성이 높습니다.  시스템 사용을 중단하시고, 관리자에게 도움을 요청하시기 바랍니다.</message>
 			</messages>
 			<style src="../../css/mail.insert.css" />
-			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
-			<script src="https://unpkg.com/@ungap/url-search-params@0.2.2/min.js" />
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="//unpkg.com/@ungap/url-search-params@0.2.2/min.js" />
 			<script src="../../js/mail.insert.js" />
 			<script src="../../js/mail.insert.check_submit.js" name="check_submit" override="true" />
 			<codes>
@@ -615,7 +616,7 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 				<message name="40015" public="true">이메일 주소가 형식에 맞지 않습니다.</message>
 			</messages>
 			<style src="../../css/mail.detail.css" />
-			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
 			<script src="../../js/mail.detail.js" />
 			<top><![CDATA[
 <noscript style="display:block;width:100%;text-align:center;">
