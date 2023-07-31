@@ -70,6 +70,8 @@ import java.io.InputStream;
 import com.sun.mail.util.ASCIIUtility;
 import com.sun.mail.util.BASE64DecoderStream;
 
+import javax.mail.Part;
+import javax.mail.internet.ParseException;
 
 /**
  * IMAP4 혹은 POP3 에서 가져온 이메일을 데이타베이스에 집어 넣는다.
@@ -512,7 +514,7 @@ public class MailParserProcessorImpl implements Processor {
 		
 		if(labels != null && labels.length > 0) {
 			index++;
-			param[index] = javax.mail.internet.MimeUtility.decodeText(labels[0]);
+			param[index] = MimeUtility.decodeText(labels[0]);
 		}
 		
 		param[index + 1] = new Timestamp(new Date().getTime());
@@ -530,8 +532,8 @@ public class MailParserProcessorImpl implements Processor {
  * @param error javax.mail.internet.ParseException
  */
 	private Object handleError(
-		javax.mail.Part part,
-		javax.mail.internet.ParseException error
+		Part part,
+		ParseException error
 	) {
 		if(part instanceof MimeMessage) {
 			try {
@@ -566,7 +568,7 @@ public class MailParserProcessorImpl implements Processor {
  * @param mailBackupDirectory 메일을 저장(백업)할 디렉토리 (이 디렉토리 아래에 eml, attach 폴더와 위치하게 되고, "/"로 끝나야 한다)
  */
 	private void parse(
-		javax.mail.Part part,
+		Part part,
 		MailCharsetInfo mailInfo, 
 		String parentContentType,
 		String path,
@@ -588,9 +590,9 @@ public class MailParserProcessorImpl implements Processor {
 		try {
 			beforeContentType = part.getContentType();
 			content = part.getContent();
-		} catch(java.io.UnsupportedEncodingException e) {
+		} catch(UnsupportedEncodingException e) {
 			content = null;
-		} catch(javax.mail.internet.ParseException e) {
+		} catch(ParseException e) {
 			content = handleError(part, e);
 			if(content == null) {
 				return;
@@ -620,7 +622,7 @@ public class MailParserProcessorImpl implements Processor {
 		} else if(content instanceof Multipart) {
 			Multipart multi = (Multipart)content;
 			for (int i = 0; i < multi.getCount(); i++) {
-				javax.mail.Part p = multi.getBodyPart(i);
+				Part p = multi.getBodyPart(i);
 				if(parseException) {
 					parse(p, mailInfo, beforeContentType, path + "_" + i, con, params, mailSaveDirectory, mailBackupDirectory);
 				} else {
@@ -634,7 +636,7 @@ public class MailParserProcessorImpl implements Processor {
 			if(mime.getContent() instanceof Multipart) {
 				Multipart multi = (Multipart)mime.getContent();
 				for (int i = 0; i < multi.getCount(); i++) {
-					javax.mail.Part p = multi.getBodyPart(i);
+					Part p = multi.getBodyPart(i);
 					if(parseException) {
 						parse(p, mailInfo, beforeContentType, path + "_" + i, con, params, mailSaveDirectory, mailBackupDirectory);
 					} else {
@@ -661,9 +663,9 @@ public class MailParserProcessorImpl implements Processor {
 				}
 			} else {
 				if(parseException) {
-					parse((javax.mail.Part)mime.getContent(), mailInfo, beforeContentType, path + "_0", con, params, mailSaveDirectory, mailBackupDirectory);
+					parse((Part)mime.getContent(), mailInfo, beforeContentType, path + "_0", con, params, mailSaveDirectory, mailBackupDirectory);
 				} else {
-					parse((javax.mail.Part)mime.getContent(), mailInfo, part.getContentType(), path + "_0", con, params, mailSaveDirectory, mailBackupDirectory);
+					parse((Part)mime.getContent(), mailInfo, part.getContentType(), path + "_0", con, params, mailSaveDirectory, mailBackupDirectory);
 				}
 			}
 		} else if(part.isMimeType("message/delivery-status")) {
@@ -741,7 +743,7 @@ public class MailParserProcessorImpl implements Processor {
  * @param mailInfo 이메일고유번호와 기본 문자셋 정보
  */
 	private String guessContentCharset(
-		javax.mail.Part part,
+		Part part,
 		MailCharsetInfo mailInfo
 	) throws MessagingException {
 		if(part instanceof MimeMessage) {
@@ -779,7 +781,7 @@ public class MailParserProcessorImpl implements Processor {
  * @param mailBackupDirectory 메일을 저장(백업)할 디렉토리 (이 디렉토리 아래에 eml, attach 폴더와 위치하게 되고, "/"로 끝나야 한다)
  */
 	private void saveFile(
-		javax.mail.Part part,
+		Part part,
 		MailCharsetInfo mailInfo,
 		String mailSaveDirectory,
 		String mailBackupDirectory
@@ -800,7 +802,7 @@ public class MailParserProcessorImpl implements Processor {
  * @param mailSaveDirectory 메일을 저장할 디렉토리 (이 디렉토리 아래에 eml, attach 폴더와 위치하게 되고, "/"로 끝나야 한다)
  */
 	private void saveFile(
-		javax.mail.Part part,
+		Part part,
 		MailCharsetInfo mailInfo,
 		String dir
 	) throws IOException, MessagingException
@@ -850,7 +852,7 @@ public class MailParserProcessorImpl implements Processor {
 					file = new File(path + File.separator + fileName);
 				} else {
 					if(fileName.lastIndexOf(".") > 0) {
-						file = new File(path + File.separator + fileName.substring(0, fileName.lastIndexOf("."))  + "-" + index + "." + fileName.substring(fileName.lastIndexOf(".") + 1));
+						file = new File(path + File.separator + fileName.substring(0, fileName.lastIndexOf(".")) + "-" + index + "." + fileName.substring(fileName.lastIndexOf(".") + 1));
 					} else {
 						file = new File(path + File.separator + fileName + "-" + index);
 					}
@@ -1083,7 +1085,7 @@ public class MailParserProcessorImpl implements Processor {
  
  * @return 이메일 주소
  */
-	private Address[] correctAddress(Address[] address, MailCharsetInfo mailInfo)  {
+	private Address[] correctAddress(Address[] address, MailCharsetInfo mailInfo) {
 		if(address == null) {
 			return null;
 		}
@@ -1212,7 +1214,7 @@ public class MailParserProcessorImpl implements Processor {
 		
 		Enumeration<Header> headers = mime.getAllHeaders();
 		while (headers.hasMoreElements()) {
-			Header  h = (Header) headers.nextElement();
+			Header h = (Header) headers.nextElement();
 			if(h.getValue().startsWith("=?")) {
 				return (h.getValue().substring(2, h.getValue().indexOf("?", 3)));
 			}

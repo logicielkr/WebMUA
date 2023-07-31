@@ -40,6 +40,8 @@ import de.agitos.dkim.SMTPDKIMMessage;
 
 import kr.graha.sample.webmua.interfaces.MessageProcessor;
 
+import javax.mail.Address;
+
 /**
  * 메일을 발송하기 전에 DKIM 서명한다.
  * DKIM-for-JavaMail(https://github.com/usrflo/DKIM-for-JavaMail) 라이브러리를 사용하였다.
@@ -68,7 +70,7 @@ public class DKIMSignMessageProcessor implements MessageProcessor {
 	
 	public MimeMessage execute(MimeMessage msg, Record params) throws MessagingException {
 		String signingDomain = null;
-		javax.mail.Address[] address = msg.getFrom();
+		Address[] address = msg.getFrom();
 		if(address != null && address.length > 0) {
 			for(int i = 0; i < address.length; i++) {
 				String adr = ((InternetAddress)address[i]).getAddress();

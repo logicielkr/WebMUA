@@ -405,7 +405,7 @@ public class FetchMailProcessorImpl implements Processor {
 							try {
 								info.setModseq(msg.getModSeq());
 								info.setSupportModSeq(true);
-							} catch (javax.mail.MessagingException e) {
+							} catch (MessagingException e) {
 								isSupportModSeq = false;
 							}
 						}
@@ -640,7 +640,7 @@ public class FetchMailProcessorImpl implements Processor {
 				}
 				Enumeration<Header> headers = message.getAllHeaders();
 				while (headers.hasMoreElements()) {
-					Header  h = (Header) headers.nextElement();
+					Header h = (Header) headers.nextElement();
 					los.writeln(h.getName() + " : " + h.getValue());
 					if(f_backup != null) {
 						los_backup.writeln(h.getName() + " : " + h.getValue());

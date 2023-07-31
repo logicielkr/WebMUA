@@ -67,6 +67,12 @@ import kr.graha.app.encryptor.EncryptorAESGCMImpl;
 import kr.graha.sample.webmua.interfaces.MessageProcessor;
 import java.lang.reflect.InvocationTargetException;
 
+import javax.mail.URLName;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeBodyPart;
+
+import java.nio.charset.StandardCharsets;
+
 
 /**
  * 이메일을 발송한다.
@@ -143,7 +149,7 @@ public class MailSendProcessorImpl implements Processor {
 				return;
 			}
 			
-			javax.mail.URLName urln = new javax.mail.URLName(
+			URLName urln = new URLName(
 				(String)mailAccount.get("protocol"), 
 				(String)mailAccount.get("smtp_host"), 
 				(int)mailAccount.get("smtp_port"), 
@@ -153,7 +159,7 @@ public class MailSendProcessorImpl implements Processor {
 			);
 			
 			Session session = Session.getInstance(props, null);
-			MimeMessage msg = getMessageWithMessageProcessor(mailAccount, params, con, session);
+			MimeMessage msg = getMessageWithMessageProcessor(mailAccount, params, con, session, request);
 			if(msg != null) {
 				save(msg, params);
 				transport = new SMTPTransport(session, urln);
@@ -294,14 +300,14 @@ public class MailSendProcessorImpl implements Processor {
 		}
 	}
 	public MimeMessage getMessageWithMessageProcessor(
-		HashMap mailAccount, Record params, Connection con, Session session
+		HashMap mailAccount, Record params, Connection con, Session session, HttpServletRequest request
 	) throws 
 		AddressException, 
 		UnsupportedEncodingException, 
 		SQLException, 
 		MessagingException
 	{
-		MimeMessage msg = getMessage(mailAccount, params, con, session);
+		MimeMessage msg = getMessage(mailAccount, params, con, session, request);
 		if(params.hasKey("prop.message.processor")) {
 			if(params.isArray("prop.message.processor")) {
 				List list = params.getArray("prop.message.processor");
@@ -337,7 +343,7 @@ public class MailSendProcessorImpl implements Processor {
  * @return 이메일(MimeMessage 객체)
  */
 	public MimeMessage getMessage(
-		HashMap mailAccount, Record params, Connection con, Session session
+		HashMap mailAccount, Record params, Connection con, Session session, HttpServletRequest request
 	) throws 
 		AddressException, 
 		UnsupportedEncodingException, 
@@ -345,7 +351,7 @@ public class MailSendProcessorImpl implements Processor {
 		MessagingException
 	{
 		MimeMessage msg = new MimeMessage(session);
-		String charset = java.nio.charset.StandardCharsets.UTF_8.name();
+		String charset = StandardCharsets.UTF_8.name();
 		Object[] param = new Object[2];
 		param[0] = params.getIntObject("param.graha_mail_id");
 		param[1] = params.getString("prop.logined_user");
@@ -443,16 +449,24 @@ public class MailSendProcessorImpl implements Processor {
 						for(Path file : stream) {
 							if(file.toFile().isFile()) {
 								if(index == 0) {
-									multipart = new javax.mail.internet.MimeMultipart("mixed");
+									multipart = new MimeMultipart("mixed");
 								}
-								javax.mail.internet.MimeBodyPart part = new javax.mail.internet.MimeBodyPart();
+								String fileName = decodeFileName(file.toUri());
+								MimeBodyPart part = new MimeBodyPart();
 								part.attachFile(file.toFile());
-								/*
-								javax.activation.DataSource source = new javax.activation.FileDataSource(file.toFile());
-								part.setDataHandler(new javax.activation.DataHandler(source));
-								part.setFileName(MimeUtility.encodeText(decodeFileName(file.toUri()), charset, null));
-								part.setHeader("Content-Type", source.getContentType());
-								*/
+								String base64EncodedFileName = MimeUtility.encodeText(fileName, charset, "B");
+								base64EncodedFileName = base64EncodedFileName.replace("?= =?" + charset + "?B?", "?=\r\n\t=?" + charset + "?B?");
+								
+								String contentType = request.getServletContext().getMimeType(fileName) + ";\r\n";
+								contentType += "\t";
+								contentType += "name=\"" + base64EncodedFileName + "\"";
+								part.setHeader("Content-Type", contentType);
+								
+								String contentDisposition = part.ATTACHMENT + ";\r\n";
+								contentDisposition += "\t";
+								contentDisposition += "filename=\"" + base64EncodedFileName + "\"";
+								part.setHeader("Content-Disposition", contentDisposition);
+
 								multipart.addBodyPart(part);
 								index++;
 							}
@@ -474,7 +488,7 @@ public class MailSendProcessorImpl implements Processor {
 				}
 				if(multipart != null) {
 					if(contents != null) {
-						javax.mail.internet.MimeBodyPart part = new javax.mail.internet.MimeBodyPart();
+						MimeBodyPart part = new MimeBodyPart();
 						part.setText(contents, charset, "plain");
 						multipart.addBodyPart(part);
 					}
