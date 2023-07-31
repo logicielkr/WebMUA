@@ -63,6 +63,7 @@ import javax.mail.Header;
 import java.util.Enumeration;
 import java.util.ArrayList;
 import kr.graha.app.encryptor.EncryptorAESGCMImpl;
+import com.sun.mail.imap.IMAPMessage;
 
 
 /**
@@ -385,7 +386,7 @@ public class FetchMailProcessorImpl implements Processor {
 					Message[] messages = null;
 					messages = imapFolder.getMessages();
 					for(int i = messages.length - 1; i >= 0; i--) {
-						com.sun.mail.imap.IMAPMessage msg = (com.sun.mail.imap.IMAPMessage)messages[i];
+						IMAPMessage msg = (IMAPMessage)messages[i];
 						ImapMessageMinimalInfo info = new ImapMessageMinimalInfo();
 						info.setServerType(ImapMessageMinimalInfo.imap);
 						info.setUid(imapFolder.getUID(msg));

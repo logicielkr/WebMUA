@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import javax.mail.URLName;
 import java.io.File;
+import com.sun.mail.imap.IMAPMessage;
 
 /**
  * IMAP 서버에서 이메일을 가져온다.
@@ -196,7 +197,7 @@ public class FetchMailFromImapProcessorImpl implements Processor {
 						if(messages != null && messages.length > 0) {
 							HashMap mailData = new HashMap();
 							mailData.put("graha_mail_id", graha_mail_id);
-							com.sun.mail.imap.IMAPMessage msg = (com.sun.mail.imap.IMAPMessage)messages[0];
+							IMAPMessage msg = (IMAPMessage)messages[0];
 							if(msg != null) {
 								fetcher.save(msg, mailData, mailAccount, params, session);
 							} else {
