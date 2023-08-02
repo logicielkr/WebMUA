@@ -254,7 +254,7 @@ create table webmua.graha_mail_account_template(
 	port integer,
 	smtp_encryption_type character varying,
 	smtp_host character varying,
-	smtp_port character varying,
+	smtp_port integer,
 	type character varying,
 	default_charset character varying,
 	imap_fetch_type character varying,
