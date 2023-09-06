@@ -192,14 +192,24 @@ public class MailParserProcessorImpl implements Processor {
 		if(eml.exists() && eml.length() > 2) {
 			MimeMessage mime = getMessage(eml);
 			if(mime != null) {
-				return save(mime, mailInfo, con, params, mailSaveDirectory, mailBackupDirectory, false);
+				try {
+					return save(mime, mailInfo, con, params, mailSaveDirectory, mailBackupDirectory, false);
+				} catch (SQLException, MessagingException, IOException e) {
+					if(logger.isLoggable(Level.SEVERE)) { logger.severe("[Email Parsing Error]graha_mail_id = " + mailInfo.getGrahaMailId()); }
+					throw e;
+				}
 			}
 		}
 		eml = new File(mailSaveDirectory + "eml" + File.separator + mailInfo.getGrahaMailId().intValue() + File.separator + "header.eml");
 		if(eml.exists() && eml.length() > 2) {
 			MimeMessage mime = getMessage(eml);
 			if(mime != null) {
-				return save(mime, mailInfo, con, params, mailSaveDirectory, mailBackupDirectory, true);
+				try {
+					return save(mime, mailInfo, con, params, mailSaveDirectory, mailBackupDirectory, true);
+				} catch (SQLException, MessagingException, IOException e) {
+					if(logger.isLoggable(Level.SEVERE)) { logger.severe("[Email Parsing Error]graha_mail_id = " + mailInfo.getGrahaMailId()); }
+					throw e;
+				}
 			}
 		}
 		String sql = "update webmua.graha_mail set status = 'X' where graha_mail_id = ?";
