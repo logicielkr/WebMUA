@@ -549,7 +549,7 @@ public class FetchMailProcessorImpl implements Processor {
 		sql += "	COALESCE(graha_mail_account_template.encryption_type, graha_mail_account.encryption_type) as encryption_type,\n";
 		sql += "	leave_on_server,\n";
 		sql += "	COALESCE(graha_mail_account.imap_fetch_type, graha_mail_account_template.imap_fetch_type) as imap_fetch_type,\n";
-		sql += "	COALESCE(graha_mail_account_template.host, graha_mail_account.host) as host,\n";
+		sql += "	REGEXP_REPLACE(COALESCE(graha_mail_account_template.host, graha_mail_account.host), '^\\s+|\\s+$', '', 'g') as host,\n";
 		sql += "	COALESCE(graha_mail_account_template.port, graha_mail_account.port) as port,\n";
 		sql += "	user_name,\n";
 		sql += "	password,\n";

@@ -558,7 +558,7 @@ public class MailSendProcessorImpl implements Processor {
 		sql = "select\n";
 		sql += "	graha_mail_account_id,\n";
 		sql += "	COALESCE(graha_mail_account_template.smtp_encryption_type, graha_mail_account.smtp_encryption_type) as smtp_encryption_type,\n";
-		sql += "	COALESCE(graha_mail_account_template.smtp_host, graha_mail_account.smtp_host) as smtp_host,\n";
+		sql += "	REGEXP_REPLACE(COALESCE(graha_mail_account_template.smtp_host, graha_mail_account.smtp_host), '^\\s+|\\s+$', '', 'g') as smtp_host,\n";
 		sql += "	COALESCE(graha_mail_account_template.smtp_port, graha_mail_account.smtp_port) as smtp_port,\n";
 		sql += "	COALESCE(smtp_user_name, user_name) as smtp_user_name,\n";
 		sql += "	COALESCE(smtp_password, password) as smtp_password,\n";

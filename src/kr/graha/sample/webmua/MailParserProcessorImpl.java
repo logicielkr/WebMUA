@@ -194,7 +194,7 @@ public class MailParserProcessorImpl implements Processor {
 			if(mime != null) {
 				try {
 					return save(mime, mailInfo, con, params, mailSaveDirectory, mailBackupDirectory, false);
-				} catch (SQLException, MessagingException, IOException e) {
+				} catch (SQLException | MessagingException | IOException e) {
 					if(logger.isLoggable(Level.SEVERE)) { logger.severe("[Email Parsing Error]graha_mail_id = " + mailInfo.getGrahaMailId()); }
 					throw e;
 				}
@@ -206,7 +206,7 @@ public class MailParserProcessorImpl implements Processor {
 			if(mime != null) {
 				try {
 					return save(mime, mailInfo, con, params, mailSaveDirectory, mailBackupDirectory, true);
-				} catch (SQLException, MessagingException, IOException e) {
+				} catch (SQLException | MessagingException | IOException e) {
 					if(logger.isLoggable(Level.SEVERE)) { logger.severe("[Email Parsing Error]graha_mail_id = " + mailInfo.getGrahaMailId()); }
 					throw e;
 				}
