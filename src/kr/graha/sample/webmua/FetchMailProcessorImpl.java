@@ -64,6 +64,8 @@ import java.util.Enumeration;
 import java.util.ArrayList;
 import kr.graha.app.encryptor.EncryptorAESGCMImpl;
 import com.sun.mail.imap.IMAPMessage;
+import com.sun.mail.pop3.POP3Message;
+import java.nio.file.Files;
 
 
 /**
@@ -258,7 +260,7 @@ public class FetchMailProcessorImpl implements Processor {
 				}
 				HashMap data = save(info, params, con);
 				if(data != null && data.containsKey("graha_mail_id")) {
-					save(messages[i], data, mailAccount, params, session);
+					save((POP3Message)messages[i], data, mailAccount, params, session);
 					if(
 						mailAccount.get("leave_on_server") != null && 
 						((String)mailAccount.get("leave_on_server")).equals("0")
@@ -380,7 +382,7 @@ public class FetchMailProcessorImpl implements Processor {
 							imapFolder.close(false);
 						}
 						imapFolder = null;
-						if(logger.isLoggable(Level.FINEST)) { logger.finest("modset >= highestModSeq"); }
+						if(logger.isLoggable(Level.FINEST)) { logger.finest("modseq >= highestModSeq"); }
 						continue;
 					}
 					Message[] messages = null;
@@ -577,7 +579,7 @@ public class FetchMailProcessorImpl implements Processor {
  * @param params Graha 에서 각종 파라미터 정보를 담아서 넘겨준 객체
  * @param session 
  */
-	protected void save(Message message, HashMap data, HashMap mailAccount, Record params, Session session) throws IOException, MessagingException {
+	protected void save(MimeMessage message, HashMap data, HashMap mailAccount, Record params, Session session) throws IOException, MessagingException {
 		int graha_mail_account_id = (int)mailAccount.get("graha_mail_account_id");
 		String type = (String)mailAccount.get("type");
 		String imap_fetch_type = (String)mailAccount.get("imap_fetch_type");
@@ -594,7 +596,7 @@ public class FetchMailProcessorImpl implements Processor {
  * @param params Graha 에서 각종 파라미터 정보를 담아서 넘겨준 객체
  * @param session 
  */
-	protected void save(Message message, HashMap data, int graha_mail_account_id, String type, String imap_fetch_type, Record params, Session session) throws IOException, MessagingException {
+	protected void save(MimeMessage message, HashMap data, int graha_mail_account_id, String type, String imap_fetch_type, Record params, Session session) throws IOException, MessagingException {
 		File dir = new File(params.getString("prop.mail.save.directory") + "eml" + java.io.File.separator + data.get("graha_mail_id"));
 		if(!dir.exists()) {
 			dir.mkdirs();
@@ -623,55 +625,46 @@ public class FetchMailProcessorImpl implements Processor {
 		FileOutputStream fos_backup = null;
 		LineOutputStream los_backup = null;
 		try {
-			if(type != null && type.equals("imap") && imap_fetch_type != null && (imap_fetch_type.equals("H") || imap_fetch_type.equals("M"))) {
-				fos = new FileOutputStream(f);
+			fos = new FileOutputStream(f);
+			if(f_backup != null) {
+				fos_backup = new FileOutputStream(f_backup);
+			}
+			if(session != null && session.getProperties() != null) {
+				los = new LineOutputStream(fos, PropUtil.getBooleanProperty(session.getProperties(), "mail.mime.allowutf8", false));
 				if(f_backup != null) {
-					fos_backup = new FileOutputStream(f_backup);
-				}
-				if(session != null && session.getProperties() != null) {
-					los = new LineOutputStream(fos, PropUtil.getBooleanProperty(session.getProperties(), "mail.mime.allowutf8", false));
-					if(f_backup != null) {
-						los_backup = new LineOutputStream(fos_backup, PropUtil.getBooleanProperty(session.getProperties(), "mail.mime.allowutf8", false));
-					}
-				} else {
-					los = new LineOutputStream(fos, false);
-					if(f_backup != null) {
-						los_backup = new LineOutputStream(fos_backup, false);
-					}
-				}
-				Enumeration<Header> headers = message.getAllHeaders();
-				while (headers.hasMoreElements()) {
-					Header h = (Header) headers.nextElement();
-					los.writeln(h.getName() + " : " + h.getValue());
-					if(f_backup != null) {
-						los_backup.writeln(h.getName() + " : " + h.getValue());
-					}
-				}
-				los.writeln();
-				los.close();
-				los = null;
-				fos.close();
-				fos = null;
-				if(f_backup != null) {
-					los_backup.writeln();
-					los_backup.close();
-					los_backup = null;
-					fos_backup.close();
-					fos_backup = null;
+					los_backup = new LineOutputStream(fos_backup, PropUtil.getBooleanProperty(session.getProperties(), "mail.mime.allowutf8", false));
 				}
 			} else {
-				fos = new FileOutputStream(f);
-				message.writeTo(fos);
-				fos.flush();
-				fos.close();
-				fos = null;
+				los = new LineOutputStream(fos, false);
 				if(f_backup != null) {
-					fos_backup = new FileOutputStream(f_backup);
-					message.writeTo(fos_backup);
-					fos_backup.flush();
-					fos_backup.close();
-					fos_backup = null;
+					los_backup = new LineOutputStream(fos_backup, false);
 				}
+			}
+			Enumeration<String> headerLines = message.getNonMatchingHeaderLines(null);
+			while(headerLines.hasMoreElements()) {
+				String line = (String)headerLines.nextElement();
+				los.writeln(line);
+				if(f_backup != null) {
+					los_backup.writeln(line);
+				}
+			}
+			los.writeln();
+			if(f_backup != null) {
+				los_backup.writeln();
+			}
+			if(type != null && type.equals("imap") && imap_fetch_type != null && (imap_fetch_type.equals("H") || imap_fetch_type.equals("M"))) {
+			} else {
+				message.getDataHandler().writeTo(fos);
+			}
+			los.close();
+			los = null;
+			fos.close();
+			fos = null;
+			if(f_backup != null) {
+				los_backup.close();
+				los_backup = null;
+				fos_backup.close();
+				fos_backup = null;
 			}
 		} catch(IOException | MessagingException e) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
