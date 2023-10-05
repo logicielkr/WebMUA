@@ -172,4 +172,18 @@ public class ImapMessageMinimalInfo {
 			}
 		}
 	}
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("receivedDate = " + this.getReceivedDate());
+		sb.append(", mailCheckColumn = " + this.getMailCheckColumn());
+		sb.append(", messageId = " + this.getMessageId());
+		sb.append(", sizeLong = " + this.getSizeLong());
+		sb.append(", modseq = " + this.getModseq());
+		sb.append(", grahaMailAccountId = " + this.getGrahaMailAccountId());
+		sb.append(", folderName = " + this.getFolderName());
+		sb.append(", folderId = " + this.getFolderId());
+		sb.append(", uid = " + this.getUid());
+		sb.append(", supportModSeq = " + this.getSupportModSeq());
+		return sb.toString();
+	}
 }
