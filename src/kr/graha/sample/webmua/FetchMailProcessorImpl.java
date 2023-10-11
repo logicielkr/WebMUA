@@ -655,6 +655,9 @@ public class FetchMailProcessorImpl implements Processor {
 			if(type != null && type.equals("imap") && imap_fetch_type != null && (imap_fetch_type.equals("H") || imap_fetch_type.equals("M"))) {
 			} else {
 				message.getDataHandler().writeTo(fos);
+				if(f_backup != null) {
+					message.getDataHandler().writeTo(fos_backup);
+				}
 			}
 			los.close();
 			los = null;
