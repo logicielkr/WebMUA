@@ -361,7 +361,7 @@ public class FetchMailProcessorImpl implements Processor {
 						if(logger.isLoggable(Level.FINEST)) { logger.finest("is_not_fetch is true"); }
 						continue;
 					}
-					imapFolder.open(Folder.READ_ONLY);
+					imapFolder.open(Folder.READ_WRITE);
 					if(logger.isLoggable(Level.FINEST)) { logger.finest("IMAPFolder is opened"); }
 					long highestModSeq = -1;
 					if(x == 0 || isSupportModSeq) {
@@ -391,15 +391,15 @@ public class FetchMailProcessorImpl implements Processor {
 						IMAPMessage msg = (IMAPMessage)messages[i];
 						ImapMessageMinimalInfo info = new ImapMessageMinimalInfo();
 						info.setServerType(ImapMessageMinimalInfo.imap);
-						info.setUid(imapFolder.getUID(msg));
+						info.setUid(imapFolder.getUID(messages[i]));
 						info.setGrahaMailAccountId((int)mailAccount.get("graha_mail_account_id"));
 						info.setMailCheckColumn((String)mailAccount.get("mail_check_column"));
 						info.setFolderName(imapFolder.getName());
 						info.setSizeLong(msg.getSizeLong());
 						info.setMessageId(msg.getMessageID());
-						info.setReceivedDate(msg.getReceivedDate());
+						info.setReceivedDate(messages[i].getReceivedDate());
 						if(!info.checkByUID()) {
-							if(msg.getMessageID() == null || msg.getMessageID().equals("")) {
+							if(info.getMessageId() == null || info.getMessageId().equals("")) {
 								if(logger.isLoggable(Level.FINEST)) { logger.finest("MessageId is null or blank"); }
 								continue;
 							}
@@ -622,52 +622,29 @@ public class FetchMailProcessorImpl implements Processor {
 		}
 		FileOutputStream fos = null;
 		LineOutputStream los = null;
-		FileOutputStream fos_backup = null;
-		LineOutputStream los_backup = null;
 		try {
 			fos = new FileOutputStream(f);
-			if(f_backup != null) {
-				fos_backup = new FileOutputStream(f_backup);
-			}
 			if(session != null && session.getProperties() != null) {
 				los = new LineOutputStream(fos, PropUtil.getBooleanProperty(session.getProperties(), "mail.mime.allowutf8", false));
-				if(f_backup != null) {
-					los_backup = new LineOutputStream(fos_backup, PropUtil.getBooleanProperty(session.getProperties(), "mail.mime.allowutf8", false));
-				}
 			} else {
 				los = new LineOutputStream(fos, false);
-				if(f_backup != null) {
-					los_backup = new LineOutputStream(fos_backup, false);
-				}
 			}
 			Enumeration<String> headerLines = message.getNonMatchingHeaderLines(null);
 			while(headerLines.hasMoreElements()) {
 				String line = (String)headerLines.nextElement();
 				los.writeln(line);
-				if(f_backup != null) {
-					los_backup.writeln(line);
-				}
 			}
 			los.writeln();
-			if(f_backup != null) {
-				los_backup.writeln();
-			}
 			if(type != null && type.equals("imap") && imap_fetch_type != null && (imap_fetch_type.equals("H") || imap_fetch_type.equals("M"))) {
 			} else {
 				message.getDataHandler().writeTo(fos);
-				if(f_backup != null) {
-					message.getDataHandler().writeTo(fos_backup);
-				}
 			}
 			los.close();
 			los = null;
 			fos.close();
 			fos = null;
 			if(f_backup != null) {
-				los_backup.close();
-				los_backup = null;
-				fos_backup.close();
-				fos_backup = null;
+				Files.copy(f.toPath(), f_backup.toPath());
 			}
 		} catch(IOException | MessagingException e) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
@@ -685,22 +662,6 @@ public class FetchMailProcessorImpl implements Processor {
 				try {
 					fos.close();
 					fos = null;
-				} catch (IOException e) {
-					if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
-				}
-			}
-			if(los_backup != null) {
-				try {
-					los_backup.close();
-					los_backup = null;
-				} catch (IOException e) {
-					if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
-				}
-			}
-			if(fos_backup != null) {
-				try {
-					fos_backup.close();
-					fos_backup = null;
 				} catch (IOException e) {
 					if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
 				}
