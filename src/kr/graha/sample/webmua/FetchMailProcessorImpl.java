@@ -624,23 +624,23 @@ public class FetchMailProcessorImpl implements Processor {
 		LineOutputStream los = null;
 		try {
 			fos = new FileOutputStream(f);
-			if(session != null && session.getProperties() != null) {
-				los = new LineOutputStream(fos, PropUtil.getBooleanProperty(session.getProperties(), "mail.mime.allowutf8", false));
-			} else {
-				los = new LineOutputStream(fos, false);
-			}
-			Enumeration<String> headerLines = message.getNonMatchingHeaderLines(null);
-			while(headerLines.hasMoreElements()) {
-				String line = (String)headerLines.nextElement();
-				los.writeln(line);
-			}
-			los.writeln();
 			if(type != null && type.equals("imap") && imap_fetch_type != null && (imap_fetch_type.equals("H") || imap_fetch_type.equals("M"))) {
+				if(session != null && session.getProperties() != null) {
+					los = new LineOutputStream(fos, PropUtil.getBooleanProperty(session.getProperties(), "mail.mime.allowutf8", false));
+				} else {
+					los = new LineOutputStream(fos, false);
+				}
+				Enumeration<String> headerLines = message.getNonMatchingHeaderLines(null);
+				while(headerLines.hasMoreElements()) {
+					String line = (String)headerLines.nextElement();
+					los.writeln(line);
+				}
+				los.writeln();
+				los.close();
+				los = null;
 			} else {
-				message.getDataHandler().writeTo(fos);
+				message.writeTo(fos);
 			}
-			los.close();
-			los = null;
 			fos.close();
 			fos = null;
 			if(f_backup != null) {
