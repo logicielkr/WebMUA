@@ -22,8 +22,8 @@ package kr.graha.sample.webmua;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import kr.graha.lib.Processor;
-import kr.graha.lib.Record;
+import kr.graha.post.interfaces.Processor;
+import kr.graha.post.lib.Record;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import kr.graha.helper.LOG;
@@ -42,7 +42,7 @@ import java.nio.file.Files;
  * 
  * @author HeonJik, KIM
  
- * @see kr.graha.lib.Processor
+ * @see kr.graha.post.interfaces.Processor
  
  * @version 0.9
  * @since 0.9
@@ -67,34 +67,34 @@ public class ForwardMailProcessorImpl implements Processor {
  * @see jakarta.servlet.http.HttpServletRequest (Apache Tomcat 10 이상)
  * @see javax.servlet.http.HttpServletResponse (Apache Tomcat 10 미만)
  * @see jakarta.servlet.http.HttpServletResponse (Apache Tomcat 10 이상)
- * @see kr.graha.lib.Record 
+ * @see kr.graha.post.lib.Record 
  * @see java.sql.Connection 
  */
 	public void execute(HttpServletRequest request, HttpServletResponse response, Record params, Connection con) {
-		if(!params.hasKey("prop.mail.save.directory")) {
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory"))) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("prop.mail.save.directory is required!!!"); }
-			params.put("error.error", "message.90001");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.90001");
 			return;
 		}
-		if(!params.hasKey("param.graha_mail_fid") || params.hasKey("param.graha_mail_id")) {
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_fid")) || params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_id"))) {
 			return;
 		}
-		if(!params.hasKey("query.graha_mail.graha_mail_id")) {
-			params.put("error.error", "message.90002");
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_QUERY, "graha_mail.graha_mail_id"))) {
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.90002");
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("param.graha_mail_id is required!!!"); }
 			return;
 		}
-		int graha_mail_fid = params.getInt("param.graha_mail_fid");
-		int graha_mail_id = params.getInt("query.graha_mail.graha_mail_id");
-		String mailSaveDirectory = params.getString("prop.mail.save.directory");
+		int graha_mail_fid = params.getInt(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_fid"));
+		int graha_mail_id = params.getInt(Record.key(Record.PREFIX_TYPE_QUERY, "graha_mail.graha_mail_id"));
+		String mailSaveDirectory = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory"));
 		String path = mailSaveDirectory + "attach" + File.separator + graha_mail_fid;
 		File dir = new File(path + File.separator);
 		if(dir.exists()) {
 			File[] files = dir.listFiles();
 			if(files != null) {
 				Object[] param = new Object[2];
-				param[0] = params.getIntObject("param.graha_mail_fid");
-				param[1] = params.getString("prop.logined_user");
+				param[0] = params.getIntObject(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_fid"));
+				param[1] = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"));
 				String sql = "select graha_mail_id\n";
 				sql += "from webmua.graha_mail\n";
 				sql += "where graha_mail_id = ?\n";
@@ -103,7 +103,7 @@ public class ForwardMailProcessorImpl implements Processor {
 				try {
 					result = DB.fetch(con, HashMap.class, sql, param);
 				} catch (SQLException e) {
-					params.put("error.error", "message.90003");
+					params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.90003");
 					if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
 				}
 				if(result != null && result.size() > 0) {
@@ -116,7 +116,7 @@ public class ForwardMailProcessorImpl implements Processor {
 						try {
 							Files.copy(files[i].toPath(), file.toPath().resolve(files[i].toPath().getFileName()));
 						} catch (IOException e) {
-							params.put("error.error", "message.90004");
+							params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.90004");
 							if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
 							break;
 						}

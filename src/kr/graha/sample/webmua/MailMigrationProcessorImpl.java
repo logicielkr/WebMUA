@@ -22,8 +22,9 @@ package kr.graha.sample.webmua;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import kr.graha.lib.Processor;
-import kr.graha.lib.Record;
+import kr.graha.post.interfaces.Processor;
+import kr.graha.post.lib.Record;
+import kr.graha.post.lib.Key;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.Properties;
@@ -74,7 +75,7 @@ import java.util.zip.ZipEntry;
  * 
  * @author HeonJik, KIM
  
- * @see kr.graha.lib.Processor
+ * @see kr.graha.post.interfaces.Processor
  
  * @version 0.9
  * @since 0.9
@@ -110,26 +111,26 @@ public class MailMigrationProcessorImpl implements Processor {
  * @see jakarta.servlet.http.HttpServletRequest (Apache Tomcat 10 이상)
  * @see javax.servlet.http.HttpServletResponse (Apache Tomcat 10 미만)
  * @see jakarta.servlet.http.HttpServletResponse (Apache Tomcat 10 이상)
- * @see kr.graha.lib.Record 
+ * @see kr.graha.post.lib.Record 
  * @see java.sql.Connection 
  */
 	public void execute(HttpServletRequest request, HttpServletResponse response, Record params, Connection con) {
-		if(!params.hasKey("prop.mail.save.directory")) {
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory"))) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("prop.mail.save.directory is required!!!"); }
-			params.put("error.error", "message.80006");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.80006");
 			return;
 		}
 		try {
 			if(!params.isEmpty()) {
-				Iterator<String> it = params.keySet().iterator();
+				Iterator<Key> it = params.keySet().iterator();
 				while(it.hasNext()) {
-					String key = (String)it.next();
-					if(params.get(key) instanceof String[]) {
-						for(int i = 0; i < ((String[])params.get(key)).length; i++) {
-							logger.log(Level.ALL, key + "." + i + "=" + ((String[])params.get(key))[i]);
+					Key key = (Key)it.next();
+					if(params.getObject(key) instanceof String[]) {
+						for(int i = 0; i < ((String[])params.getObject(key)).length; i++) {
+							logger.log(Level.ALL, key + "." + i + "=" + ((String[])params.getObject(key))[i]);
 						}
 					} else {
-						if(key.startsWith("uploaded.file.path.")) {
+						if(key.getKey().startsWith("uploaded.file.path.")) {
 							execute(params.getString(key), params, con);
 						}
 					}
@@ -137,19 +138,19 @@ public class MailMigrationProcessorImpl implements Processor {
 			}
 		} catch (FileNotFoundException e) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
-			params.put("error.error", "message.80007");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.80007");
 			return;
 		} catch (MessagingException e) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
-			params.put("error.error", "message.80008");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.80008");
 			return;
 		} catch (IOException e) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
-			params.put("error.error", "message.80009");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.80009");
 			return;
 		} catch (SQLException e) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
-			params.put("error.error", "message.80010");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.80010");
 			return;
 		}
 	}
@@ -240,11 +241,11 @@ public class MailMigrationProcessorImpl implements Processor {
 		}
 		Record params = new Record();
 		MailMigrationProcessorImpl impl = new MailMigrationProcessorImpl();
-		params.put("param.graha_mail_account_id", impl.getProperty(prop, "param.graha_mail_account_id"));
-		params.put("prop.mail.save.directory", impl.getProperty(prop, "prop.mail.save.directory"));
-		params.put("prop.mail.backup.directory", impl.getProperty(prop, "prop.mail.backup.directory"));
-		params.put("prop.logined_user", impl.getProperty(prop, "prop.logined_user"));
-		params.put("header.remote_addr", impl.getProperty(prop, "header.remote_addr"));
+		params.put(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id"), impl.getProperty(prop, "param.graha_mail_account_id"));
+		params.put(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory"), impl.getProperty(prop, "prop.mail.save.directory"));
+		params.put(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory"), impl.getProperty(prop, "prop.mail.backup.directory"));
+		params.put(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"), impl.getProperty(prop, "prop.logined_user"));
+		params.put(Record.key(Record.PREFIX_TYPE_HEADER, "remote_addr"), impl.getProperty(prop, "header.remote_addr"));
 		
 		Connection con = null;
 		try {
@@ -258,7 +259,7 @@ public class MailMigrationProcessorImpl implements Processor {
 			if(impl.getLogger().isLoggable(Level.SEVERE)) { impl.getLogger().severe(LOG.toString(e)); }
 		}
 		if(con != null) {
-			params.put("param.graha_mail_folder_id", impl.getProperty(prop, "param.graha_mail_folder_id"));
+			params.put(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_folder_id"), impl.getProperty(prop, "param.graha_mail_folder_id"));
 			impl.execute(impl.getProperty(prop, "mailbox.file.name"), params, con);
 			
 			MailParserProcessorImpl parser = new MailParserProcessorImpl();
@@ -282,15 +283,15 @@ public class MailMigrationProcessorImpl implements Processor {
 		MimeMessage mime = new MimeMessage(null, is);
 		FetchMailProcessorImpl fetcher = new FetchMailProcessorImpl();
 		ImapMessageMinimalInfo info = new ImapMessageMinimalInfo();
-		info.setGrahaMailAccountId(params.getInt("param.graha_mail_account_id"));
-		if(params.hasKey("param.graha_mail_folder_id")) {
-			info.setFolderId(params.getInt("param.graha_mail_folder_id"));
+		info.setGrahaMailAccountId(params.getInt(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id")));
+		if(params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_folder_id"))) {
+			info.setFolderId(params.getInt(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_folder_id")));
 		} else {
-			info.setFolderId(params.getInt("query.graha_mail_folder.graha_mail_folder_id"));
+			info.setFolderId(params.getInt(Record.key(Record.PREFIX_TYPE_QUERY, "graha_mail_folder.graha_mail_folder_id")));
 		}
 		HashMap data = fetcher.save(info, params, con);
 		if(data != null && data.containsKey("graha_mail_id")) {
-			fetcher.save(mime, data, params.getInt("param.graha_mail_account_id"), null, null, params, null);
+			fetcher.save(mime, data, params.getInt(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id")), null, null, params, null);
 		}
 	}
 /**

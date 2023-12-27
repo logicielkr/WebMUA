@@ -222,8 +222,8 @@ table#graha_mail_account td.smtp_encryption_type
 				<params>
 					<param name="graha_mail_folder_id" datatype="int" value="sequence.nextval('webmua.graha_mail_folder$graha_mail_folder_id')" />
 					<param name="graha_mail_account_id" datatype="int" value="query.graha_mail_account.graha_mail_account_id" />
-					<param name="insert_id" only="insert" value="prop.logined_user" datatype="varchar" />
-					<param name="insert_ip" only="insert" value="header.remote_addr" datatype="varchar" />
+					<param name="insert_id" value="prop.logined_user" datatype="varchar" />
+					<param name="insert_ip" value="header.remote_addr" datatype="varchar" />
 					<param name="update_id" value="prop.logined_user" datatype="varchar" />
 					<param name="update_ip" value="header.remote_addr" datatype="varchar" />
 				</params>

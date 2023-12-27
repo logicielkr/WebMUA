@@ -21,7 +21,7 @@
 
 package kr.graha.sample.webmua.interfaces;
 
-import kr.graha.lib.Record;
+import kr.graha.post.lib.Record;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.AddressException;
 import java.io.UnsupportedEncodingException;

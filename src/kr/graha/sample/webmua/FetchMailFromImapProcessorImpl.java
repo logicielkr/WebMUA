@@ -23,8 +23,8 @@ package kr.graha.sample.webmua;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import kr.graha.lib.Processor;
-import kr.graha.lib.Record;
+import kr.graha.post.interfaces.Processor;
+import kr.graha.post.lib.Record;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import kr.graha.helper.LOG;
@@ -52,7 +52,7 @@ import com.sun.mail.imap.IMAPMessage;
  * 
  * @author HeonJik, KIM
  
- * @see kr.graha.lib.Processor
+ * @see kr.graha.post.interfaces.Processor
  
  * @version 0.9
  * @since 0.9
@@ -76,30 +76,30 @@ public class FetchMailFromImapProcessorImpl implements Processor {
  * @see jakarta.servlet.http.HttpServletRequest (Apache Tomcat 10 이상)
  * @see javax.servlet.http.HttpServletResponse (Apache Tomcat 10 미만)
  * @see jakarta.servlet.http.HttpServletResponse (Apache Tomcat 10 이상)
- * @see kr.graha.lib.Record 
+ * @see kr.graha.post.lib.Record 
  * @see java.sql.Connection 
  */
 	public void execute(HttpServletRequest request, HttpServletResponse response, Record params, Connection con) {
 		fetch(params, con);
 	}
 	private void fetch(Record params, Connection con) {
-		if(!params.hasKey("prop.mail.save.directory")) {
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory"))) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("prop.mail.save.directory is required!!!"); }
-			params.put("error.error", "message.40001");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.40001");
 			return;
 		}
-		if(!params.hasKey("param.graha_mail_id")) {
-			params.put("error.error", "message.40002");
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_id"))) {
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.40002");
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("param.graha_mail_id is required!!!"); }
 			return;
 		}
 		
-		int graha_mail_id = params.getInt("param.graha_mail_id");
-		String mailSaveDirectory = params.getString("prop.mail.save.directory");
+		int graha_mail_id = params.getInt(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_id"));
+		String mailSaveDirectory = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory"));
 		
 		String mailBackupDirectory = null;
-		if(params.hasKey("prop.mail.backup.directory")) {
-			mailBackupDirectory = params.getString("prop.mail.backup.directory");
+		if(params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory"))) {
+			mailBackupDirectory = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory"));
 		}
 		
 		File f = new File(mailSaveDirectory + "eml" + java.io.File.separator + graha_mail_id + java.io.File.separator + "mail.eml");
@@ -109,7 +109,7 @@ public class FetchMailFromImapProcessorImpl implements Processor {
 		
 		Object[] param = new Object[2];
 		param[0] = graha_mail_id;
-		param[1] = params.getString("prop.logined_user");
+		param[1] = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"));
 		
 		String sql = null;
 		sql = "select graha_mail.imap_uid,\n";
@@ -142,34 +142,34 @@ public class FetchMailFromImapProcessorImpl implements Processor {
 						if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
 					}
 					if(mailAccount == null) {
-						params.put("error.error", "message.40003");
+						params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.40003");
 						if(logger.isLoggable(Level.SEVERE)) { logger.severe("Mail Account Info is not exists!!!"); }
 						return;
 					}
 					mailAccount.put("imap_fetch_type", "A");
 					Properties props = fetcher.getProps(mailAccount);
 					if(props == null) {
-						params.put("error.error", "message.40004");
+						params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.40004");
 						return;
 					}
 					if(!mailAccount.containsKey("type") || mailAccount.get("type") == null) {
-						params.put("error.error", "message.40005");
+						params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.40005");
 						return;
 					}
 					if(!mailAccount.containsKey("host") || mailAccount.get("host") == null) {
-						params.put("error.error", "message.40006");
+						params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.40006");
 						return;
 					}
 					if(!mailAccount.containsKey("port") || mailAccount.get("port") == null) {
-						params.put("error.error", "message.40007");
+						params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.40007");
 						return;
 					}
 					if(!mailAccount.containsKey("user_name") || mailAccount.get("user_name") == null) {
-						params.put("error.error", "message.40008");
+						params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.40008");
 						return;
 					}
 					if(!mailAccount.containsKey("password") || mailAccount.get("password") == null) {
-						params.put("error.error", "message.40009");
+						params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.40009");
 						return;
 					}
 					URLName urln = new URLName(
@@ -221,9 +221,9 @@ public class FetchMailFromImapProcessorImpl implements Processor {
 						
 					} catch (MessagingException | IOException e) {
 						if(isConnect) {
-							params.put("error.error", "message.40010");
+							params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.40010");
 						} else {
-							params.put("error.error", "message.40011");
+							params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.40011");
 						}
 						if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
 					} finally {

@@ -23,8 +23,8 @@ package kr.graha.sample.webmua;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import kr.graha.lib.Processor;
-import kr.graha.lib.Record;
+import kr.graha.post.interfaces.Processor;
+import kr.graha.post.lib.Record;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import kr.graha.helper.LOG;
@@ -38,7 +38,7 @@ import java.sql.Connection;
  * 
  * @author HeonJik, KIM
  
- * @see kr.graha.lib.Processor
+ * @see kr.graha.post.interfaces.Processor
  
  * @version 0.9
  * @since 0.9
@@ -63,37 +63,37 @@ public class MailCharsetConverterProcessorImpl implements Processor {
  * @see jakarta.servlet.http.HttpServletRequest (Apache Tomcat 10 이상)
  * @see javax.servlet.http.HttpServletResponse (Apache Tomcat 10 미만)
  * @see jakarta.servlet.http.HttpServletResponse (Apache Tomcat 10 이상)
- * @see kr.graha.lib.Record 
+ * @see kr.graha.post.lib.Record 
  * @see java.sql.Connection 
  */
 	public void execute(HttpServletRequest request, HttpServletResponse response, Record params, Connection con) {
-		if(!params.hasKey("prop.mail.save.directory")) {
-			params.put("error.error", "message.50001");
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory"))) {
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.50001");
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("prop.mail.save.directory is required!!!"); }
 			return;
 		}
-		if(!params.hasKey("param.graha_mail_account_id")) {
-			params.put("error.error", "message.50002");
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id"))) {
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.50002");
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("param.graha_mail_account_id is required!!!"); }
 			return;
 		}
-		if(!params.hasKey("param.graha_mail_id")) {
-			params.put("error.error", "message.50003");
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_id"))) {
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.50003");
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("param.graha_mail_id is required!!!"); }
 			return;
 		}
-		if(!params.hasKey("param.charset")) {
-			params.put("error.error", "message.50004");
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "charset"))) {
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.50004");
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("param.charset is required!!!"); }
 			return;
 		}
-		int graha_mail_account_id = params.getInt("param.graha_mail_account_id");
-		int graha_mail_id = params.getInt("param.graha_mail_id");
-		String mailSaveDirectory = params.getString("prop.mail.save.directory");
-		String charset = params.getString("param.charset");
+		int graha_mail_account_id = params.getInt(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id"));
+		int graha_mail_id = params.getInt(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_id"));
+		String mailSaveDirectory = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory"));
+		String charset = params.getString(Record.key(Record.PREFIX_TYPE_PARAM, "charset"));
 		String mailBackupDirectory = null;
-		if(params.hasKey("prop.mail.backup.directory")) {
-			mailBackupDirectory = params.getString("prop.mail.backup.directory");
+		if(params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory"))) {
+			mailBackupDirectory = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory"));
 		}
 		try {
 			MailCharsetInfo mailInfo = new MailCharsetInfo();
@@ -102,7 +102,7 @@ public class MailCharsetConverterProcessorImpl implements Processor {
 			MailParserProcessorImpl parser = new MailParserProcessorImpl();
 			parser.saveMail(mailInfo, con, params, mailSaveDirectory, mailBackupDirectory);
 		} catch(SQLException | MessagingException | IOException e) {
-			params.put("error.error", "message.50005");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.50005");
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
 		}
 	}

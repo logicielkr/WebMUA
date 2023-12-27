@@ -23,8 +23,8 @@ package kr.graha.sample.webmua;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import kr.graha.lib.Processor;
-import kr.graha.lib.Record;
+import kr.graha.post.interfaces.Processor;
+import kr.graha.post.lib.Record;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import kr.graha.helper.LOG;
@@ -59,7 +59,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import com.sun.mail.smtp.SMTPTransport;
-import kr.graha.lib.Encryptor;
+import kr.graha.post.interfaces.Encryptor;
 import java.util.Date;
 
 import kr.graha.app.encryptor.EncryptorAESGCMImpl;
@@ -79,7 +79,7 @@ import java.nio.charset.StandardCharsets;
  * 
  * @author HeonJik, KIM
  
- * @see kr.graha.lib.Processor
+ * @see kr.graha.post.interfaces.Processor
  
  * @version 0.9
  * @since 0.9
@@ -103,23 +103,23 @@ public class MailSendProcessorImpl implements Processor {
  * @see jakarta.servlet.http.HttpServletRequest (Apache Tomcat 10 이상)
  * @see javax.servlet.http.HttpServletResponse (Apache Tomcat 10 미만)
  * @see jakarta.servlet.http.HttpServletResponse (Apache Tomcat 10 이상)
- * @see kr.graha.lib.Record 
+ * @see kr.graha.post.lib.Record 
  * @see java.sql.Connection 
  */
 	public void execute(HttpServletRequest request, HttpServletResponse response, Record params, Connection con) {
-		if(!params.hasKey("prop.mail.save.directory")) {
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory"))) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("prop.mail.save.directory is required!!!"); }
-			params.put("error.error", "message.60001");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60001");
 			return;
 		}
-		if(!params.hasKey("param.graha_mail_account_id")) {
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id"))) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("param.graha_mail_account_id is required!!!"); }
-			params.put("error.error", "message.60002");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60002");
 			return;
 		}
-		if(!params.hasKey("param.graha_mail_id")) {
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_id"))) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("param.graha_mail_account_id is required!!!"); }
-			params.put("error.error", "message.60003");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60003");
 			return;
 		}
 		Transport transport = null;
@@ -129,23 +129,23 @@ public class MailSendProcessorImpl implements Processor {
 			Properties props = getProps(mailAccount);
 			
 			if(!mailAccount.containsKey("protocol") || mailAccount.get("protocol") == null) {
-				params.put("error.error", "message.60004");
+				params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60004");
 				return;
 			}
 			if(!mailAccount.containsKey("smtp_host") || mailAccount.get("smtp_host") == null) {
-				params.put("error.error", "message.60005");
+				params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60005");
 				return;
 			}
 			if(!mailAccount.containsKey("smtp_port") || mailAccount.get("smtp_port") == null) {
-				params.put("error.error", "message.60006");
+				params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60006");
 				return;
 			}
 			if(!mailAccount.containsKey("smtp_user_name") || mailAccount.get("smtp_user_name") == null) {
-				params.put("error.error", "message.60007");
+				params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60007");
 				return;
 			}
 			if(!mailAccount.containsKey("smtp_password") || mailAccount.get("smtp_password") == null) {
-				params.put("error.error", "message.60008");
+				params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60008");
 				return;
 			}
 			
@@ -172,9 +172,9 @@ public class MailSendProcessorImpl implements Processor {
 			}
 		} catch (SQLException | NoSuchProviderException | IOException | MessagingException e) {
 			if(isConnect || transport == null) {
-				params.put("error.error", "message.60009");
+				params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60009");
 			} else {
-				params.put("error.error", "message.60010");
+				params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60010");
 			}
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
 		} finally {
@@ -214,7 +214,7 @@ public class MailSendProcessorImpl implements Processor {
 		sql += "	update_ip = ?\n";
 		sql += "where graha_mail_id = ?\n";
 		Object[] param = new Object[index];
-		param[0] = params.getIntObject("param.graha_mail_account_id");
+		param[0] = params.getIntObject(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id"));
 		index = 0;
 		if(sentDate != null) {
 			index++;
@@ -225,9 +225,9 @@ public class MailSendProcessorImpl implements Processor {
 			param[index] = messageID;
 		}
 		param[index + 1] = new java.sql.Timestamp(new java.util.Date().getTime());
-		param[index + 2] = params.getString("prop.logined_user");
-		param[index + 3] = params.getString("header.remote_addr");
-		param[index + 4] = params.getIntObject("param.graha_mail_id");
+		param[index + 2] = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"));
+		param[index + 3] = params.getString(Record.key(Record.PREFIX_TYPE_HEADER, "remote_addr"));
+		param[index + 4] = params.getIntObject(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_id"));
 		DB.execute(con, null, sql, param);
 	}
 /**
@@ -237,18 +237,18 @@ public class MailSendProcessorImpl implements Processor {
  * @param params Graha 에서 각종 파라미터 정보를 담아서 넘겨준 객체
  */
 	public void save(Message message, Record params) throws IOException, MessagingException {
-		File dir = new File(params.getString("prop.mail.save.directory") + "eml" + java.io.File.separator + params.get("param.graha_mail_id"));
+		File dir = new File(params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory")) + "eml" + java.io.File.separator + params.getObject(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_id")));
 		if(!dir.exists()) {
 			dir.mkdirs();
 		}
-		File f = new File(params.getString("prop.mail.save.directory") + "eml" + java.io.File.separator + params.get("param.graha_mail_id") + java.io.File.separator + "mail.eml");
+		File f = new File(params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory")) + "eml" + java.io.File.separator + params.getObject(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_id")) + java.io.File.separator + "mail.eml");
 		File f_backup = null;
-		if(params.hasKey("prop.mail.backup.directory")) {
-			dir = new File(params.getString("prop.mail.backup.directory") + "eml" + java.io.File.separator + params.get("param.graha_mail_id"));
+		if(params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory"))) {
+			dir = new File(params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory")) + "eml" + java.io.File.separator + params.getObject(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_id")));
 			if(!dir.exists()) {
 				dir.mkdirs();
 			}
-			f_backup = new File(params.getString("prop.mail.backup.directory") + "eml" + java.io.File.separator + params.get("param.graha_mail_id") + java.io.File.separator + "mail.eml");
+			f_backup = new File(params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory")) + "eml" + java.io.File.separator + params.getObject(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_id")) + java.io.File.separator + "mail.eml");
 		}
 		FileOutputStream fos = null;
 		FileOutputStream fos_backup = null;
@@ -308,16 +308,16 @@ public class MailSendProcessorImpl implements Processor {
 		MessagingException
 	{
 		MimeMessage msg = getMessage(mailAccount, params, con, session, request);
-		if(params.hasKey("prop.message.processor")) {
-			if(params.isArray("prop.message.processor")) {
-				List list = params.getArray("prop.message.processor");
+		if(params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "message.processor"))) {
+			if(params.isArray(Record.key(Record.PREFIX_TYPE_PROP, "message.processor"))) {
+				List list = params.getArray(Record.key(Record.PREFIX_TYPE_PROP, "message.processor"));
 				if(list != null) {
 					for(int i = 0; i < list.size(); i++) {
 						msg = executeMessageProcessor(msg, params, (String)list.get(i));
 					}
 				}
 			} else {
-				msg = executeMessageProcessor(msg, params, params.getString("prop.message.processor"));
+				msg = executeMessageProcessor(msg, params, params.getString(Record.key(Record.PREFIX_TYPE_PROP, "message.processor")));
 			}
 		}
 		return msg;
@@ -353,8 +353,8 @@ public class MailSendProcessorImpl implements Processor {
 		MimeMessage msg = new MimeMessage(session);
 		String charset = StandardCharsets.UTF_8.name();
 		Object[] param = new Object[2];
-		param[0] = params.getIntObject("param.graha_mail_id");
-		param[1] = params.getString("prop.logined_user");
+		param[0] = params.getIntObject(Record.key(Record.PREFIX_TYPE_PARAM, ("graha_mail_id")));
+		param[1] = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"));
 		String sql = "select\n";
 		sql += "	graha_mail.subject,\n"; 
 		sql += "	re_mail.message_id as re_message_id,\n";
@@ -420,12 +420,12 @@ public class MailSendProcessorImpl implements Processor {
 						}
 					} else {
 						if(logger.isLoggable(Level.SEVERE)) { logger.severe("email_address is null or blank(" + email_address + ")"); }
-						params.put("error.error", "message.60014");
+						params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60014");
 						error_email_address = true;
 					}
 				} else {
 					if(logger.isLoggable(Level.SEVERE)) { logger.severe("email_address is null or blank"); }
-					params.put("error.error", "message.60013");
+					params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60013");
 					error_email_address = true;
 				}
 			}
@@ -439,7 +439,7 @@ public class MailSendProcessorImpl implements Processor {
 					HashMap data = (HashMap)result.get(0);
 					contents = (String)data.get("contents");
 				}
-				String path = params.getString("prop.mail.save.directory") + "attach" + File.separator + params.get("param.graha_mail_id");
+				String path = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory")) + "attach" + File.separator + params.getObject(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_id"));
 				Multipart multipart = null;
 				if(Files.exists(Paths.get(path)) && Files.isDirectory(Paths.get(path))) {
 					DirectoryStream<Path> stream = null;
@@ -502,12 +502,12 @@ public class MailSendProcessorImpl implements Processor {
 				}
 			} else {
 				if(logger.isLoggable(Level.SEVERE)) { logger.severe("to address is null"); }
-				params.put("error.error", "message.60011");
+				params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60011");
 				return null;
 			}
 		} else {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("address is null"); }
-			params.put("error.error", "message.60012");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.60012");
 			return null;
 		}
 		return msg;
@@ -549,12 +549,12 @@ public class MailSendProcessorImpl implements Processor {
 	{
 		String sql = null;
 		Object[] param = new Object[2];
-		if(params.hasKey("param.graha_mail_account_id")) {
-			param[0] = params.getIntObject("param.graha_mail_account_id");
+		if(params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id"))) {
+			param[0] = params.getIntObject(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id"));
 		} else {
 			return null;
 		}
-		param[1] = params.getString("prop.logined_user");
+		param[1] = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"));
 		sql = "select\n";
 		sql += "	graha_mail_account_id,\n";
 		sql += "	COALESCE(graha_mail_account_template.smtp_encryption_type, graha_mail_account.smtp_encryption_type) as smtp_encryption_type,\n";

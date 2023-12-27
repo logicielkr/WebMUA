@@ -23,8 +23,8 @@ package kr.graha.sample.webmua;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import kr.graha.lib.Processor;
-import kr.graha.lib.Record;
+import kr.graha.post.interfaces.Processor;
+import kr.graha.post.lib.Record;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import kr.graha.helper.LOG;
@@ -53,7 +53,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-import kr.graha.lib.Encryptor;
+import kr.graha.post.interfaces.Encryptor;
 import javax.mail.Flags.Flag;
 import java.util.Date;
 import java.sql.Timestamp;
@@ -73,7 +73,7 @@ import java.nio.file.Files;
  * 
  * @author HeonJik, KIM
  
- * @see kr.graha.lib.Processor
+ * @see kr.graha.post.interfaces.Processor
  
  * @version 0.9
  * @since 0.9
@@ -98,7 +98,7 @@ public class FetchMailProcessorImpl implements Processor {
  * @see jakarta.servlet.http.HttpServletRequest (Apache Tomcat 10 이상)
  * @see javax.servlet.http.HttpServletResponse (Apache Tomcat 10 미만)
  * @see jakarta.servlet.http.HttpServletResponse (Apache Tomcat 10 이상)
- * @see kr.graha.lib.Record 
+ * @see kr.graha.post.lib.Record 
  * @see java.sql.Connection 
  */
 	public void execute(HttpServletRequest request, HttpServletResponse response, Record params, Connection con) {
@@ -111,13 +111,13 @@ public class FetchMailProcessorImpl implements Processor {
  * @param con 데이타베이스 연결(Connection)
  */
 	private void fetch(Record params, Connection con) {
-		if(!params.hasKey("prop.mail.save.directory")) {
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory"))) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("prop.mail.save.directory is required!!!"); }
-			params.put("error.error", "message.30001");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.30001");
 			return;
 		}
-		if(!params.hasKey("param.graha_mail_account_id")) {
-			params.put("error.error", "message.30002");
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id"))) {
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.30002");
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("param.graha_mail_account_id is required!!!"); }
 			return;
 		}
@@ -129,38 +129,38 @@ public class FetchMailProcessorImpl implements Processor {
 		}
 		if(mailAccount == null) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("Mail Account Info is not exists!!!"); }
-			params.put("error.error", "message.30003");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.30003");
 			return;
 		}
 		if(!mailAccount.containsKey("type") || mailAccount.get("type") == null) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("Mail Account Info(type) is null or empty!!!"); }
-			params.put("error.error", "message.30004");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.30004");
 			return;
 		}
 		if(!mailAccount.containsKey("host") || mailAccount.get("host") == null) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("Mail Account Info(host) is null or empty!!!"); }
-			params.put("error.error", "message.30005");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.30005");
 			return;
 		}
 		if(!mailAccount.containsKey("port") || mailAccount.get("port") == null) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("Mail Account Info(port) is null or empty!!!"); }
-			params.put("error.error", "message.30006");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.30006");
 			return;
 		}
 		if(!mailAccount.containsKey("user_name") || mailAccount.get("user_name") == null) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("Mail Account Info(user_name) is null or empty!!!"); }
-			params.put("error.error", "message.30007");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.30007");
 			return;
 		}
 		if(!mailAccount.containsKey("password") || mailAccount.get("password") == null) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("Mail Account Info(password) is null or empty!!!"); }
-			params.put("error.error", "message.30008");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.30008");
 			return;
 		}
 		Properties props = getProps(mailAccount);
 		if(props == null) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("Mail Property is not exists!!!"); }
-			params.put("error.error", "message.30009");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.30009");
 			return;
 		}
 		URLName urln = new URLName(
@@ -193,9 +193,9 @@ public class FetchMailProcessorImpl implements Processor {
 			store = null;
 		} catch (MessagingException | SQLException | IOException e) {
 			if(isConnect) {
-				params.put("error.error", "message.30010");
+				params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.30010");
 			} else {
-				params.put("error.error", "message.30011");
+				params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.30011");
 			}
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
 		} finally {
@@ -342,10 +342,10 @@ public class FetchMailProcessorImpl implements Processor {
 					HashMap folderInfo = saveFolderIfNotExists(imapFolder, (int)mailAccount.get("graha_mail_account_id"), params, con);
 					if(imap_fetch_type != null && (imap_fetch_type.equals("F") || imap_fetch_type.equals("M"))) {
 						if(
-							!params.hasKey("param.graha_mail_folder_id") ||
+							!params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_folder_id")) ||
 							!folderInfo.containsKey("graha_mail_folder_id") ||
 							!(folderInfo.get("graha_mail_folder_id") instanceof Integer) ||
-							params.getInt("param.graha_mail_folder_id") != (int)folderInfo.get("graha_mail_folder_id")
+							params.getInt(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_folder_id")) != (int)folderInfo.get("graha_mail_folder_id")
 						) {
 							if(logger.isLoggable(Level.FINEST)) { logger.finest("imap_fetch_type is F or M but graha_mail_folder_id is not match"); }
 							continue;
@@ -539,12 +539,12 @@ public class FetchMailProcessorImpl implements Processor {
 	{
 		String sql = null;
 		Object[] param = new Object[2];
-		if(params.hasKey("param.graha_mail_account_id")) {
-			param[0] = params.getIntObject("param.graha_mail_account_id");
+		if(params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id"))) {
+			param[0] = params.getIntObject(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id"));
 		} else {
 			return null;
 		}
-		param[1] = params.getString("prop.logined_user");
+		param[1] = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"));
 		sql = "select\n";
 		sql += "	graha_mail_account_id,\n";
 		sql += "	COALESCE(graha_mail_account_template.type, graha_mail_account.type) as type,\n";
@@ -597,12 +597,12 @@ public class FetchMailProcessorImpl implements Processor {
  * @param session 
  */
 	protected void save(MimeMessage message, HashMap data, int graha_mail_account_id, String type, String imap_fetch_type, Record params, Session session) throws IOException, MessagingException {
-		File dir = new File(params.getString("prop.mail.save.directory") + "eml" + java.io.File.separator + data.get("graha_mail_id"));
+		File dir = new File(params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory")) + "eml" + java.io.File.separator + data.get("graha_mail_id"));
 		if(!dir.exists()) {
 			dir.mkdirs();
 		}
-		if(params.hasKey("prop.mail.backup.directory")) {
-			dir = new File(params.getString("prop.mail.backup.directory") + "eml" + java.io.File.separator + data.get("graha_mail_id"));
+		if(params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory"))) {
+			dir = new File(params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory")) + "eml" + java.io.File.separator + data.get("graha_mail_id"));
 			if(!dir.exists()) {
 				dir.mkdirs();
 			}
@@ -610,14 +610,14 @@ public class FetchMailProcessorImpl implements Processor {
 		File f = null;
 		File f_backup = null;
 		if(type != null && type.equals("imap") && imap_fetch_type != null && (imap_fetch_type.equals("H") || imap_fetch_type.equals("M"))) {
-			f = new File(params.getString("prop.mail.save.directory") + "eml" + java.io.File.separator + data.get("graha_mail_id") + java.io.File.separator + "header.eml");
-			if(params.hasKey("prop.mail.backup.directory")) {
-				f_backup = new File(params.getString("prop.mail.backup.directory") + "eml" + java.io.File.separator + data.get("graha_mail_id") + java.io.File.separator + "header.eml");
+			f = new File(params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory")) + "eml" + java.io.File.separator + data.get("graha_mail_id") + java.io.File.separator + "header.eml");
+			if(params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory"))) {
+				f_backup = new File(params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory")) + "eml" + java.io.File.separator + data.get("graha_mail_id") + java.io.File.separator + "header.eml");
 			}
 		} else {
-			f = new File(params.getString("prop.mail.save.directory") + "eml" + java.io.File.separator + data.get("graha_mail_id") + java.io.File.separator + "mail.eml");
-			if(params.hasKey("prop.mail.backup.directory")) {
-				f_backup = new File(params.getString("prop.mail.backup.directory") + "eml" + java.io.File.separator + data.get("graha_mail_id") + java.io.File.separator + "mail.eml");
+			f = new File(params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory")) + "eml" + java.io.File.separator + data.get("graha_mail_id") + java.io.File.separator + "mail.eml");
+			if(params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory"))) {
+				f_backup = new File(params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory")) + "eml" + java.io.File.separator + data.get("graha_mail_id") + java.io.File.separator + "mail.eml");
 			}
 		}
 		FileOutputStream fos = null;
@@ -690,7 +690,7 @@ public class FetchMailProcessorImpl implements Processor {
 			Object[] param = new Object[4];
 			param[0] = modseq;
 			param[1] = graha_mail_account_id;
-			param[2] = params.getString("prop.logined_user");
+			param[2] = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"));
 			param[3] = folder.getName();
 			DB.execute(con, null, sql, param);
 		}
@@ -758,7 +758,7 @@ public class FetchMailProcessorImpl implements Processor {
 	protected HashMap saveFolderIfNotExists(String folderName, int graha_mail_account_id, Record params, Connection con) throws SQLException {
 		Object[] param = new Object[3];
 		param[0] = graha_mail_account_id;
-		param[1] = params.getString("prop.logined_user");
+		param[1] = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"));
 		param[2] = folderName;
 		String sql = "select graha_mail_folder_id\n";
 		sql += "	, modseq\n";
@@ -776,12 +776,12 @@ public class FetchMailProcessorImpl implements Processor {
 				data.put("graha_mail_account_id", graha_mail_account_id);
 				data.put("name", folderName);
 				data.put("type", getFolderType(folderName, con));
-				data.put("insert_id", params.getString("prop.logined_user"));
-				data.put("update_id", params.getString("prop.logined_user"));
+				data.put("insert_id", params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user")));
+				data.put("update_id", params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user")));
 				data.put("insert_date", new java.sql.Timestamp(new java.util.Date().getTime()));
 				data.put("update_date", new java.sql.Timestamp(new java.util.Date().getTime()));
-				data.put("insert_ip", params.getString("header.remote_addr"));
-				data.put("update_ip", params.getString("header.remote_addr"));
+				data.put("insert_ip", params.getString(Record.key(Record.PREFIX_TYPE_HEADER, "remote_addr")));
+				data.put("update_ip", params.getString(Record.key(Record.PREFIX_TYPE_HEADER, "remote_addr")));
 				DB.insert(con, data, "webmua.graha_mail_folder");
 				return data;
 			}
@@ -811,9 +811,9 @@ public class FetchMailProcessorImpl implements Processor {
 				param = new Object[4];
 			}
 			param[0] = info.getUid();
-			param[1] = params.getString("prop.logined_user");
+			param[1] = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"));
 			param[2] = info.getGrahaMailAccountId();
-			param[3] = params.getString("prop.logined_user");
+			param[3] = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"));
 			if(info.imap()) {
 				if(info.getFolderId() > 0) {
 					param[4] = info.getFolderId();
@@ -896,7 +896,7 @@ public class FetchMailProcessorImpl implements Processor {
 		if(param != null) {
 			int index = 0;
 			param[index++] = info.getGrahaMailAccountId();
-			param[index++] = params.getString("prop.logined_user");
+			param[index++] = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"));
 			if(info.getFolderName() != null) {
 				param[index++] = info.getFolderName();
 			}
@@ -938,12 +938,12 @@ public class FetchMailProcessorImpl implements Processor {
 				data.put("received_date", new java.sql.Timestamp(info.getReceivedDate().getTime()));
 			}
 			data.put("status", "F");
-			data.put("insert_id", params.getString("prop.logined_user"));
-			data.put("update_id", params.getString("prop.logined_user"));
+			data.put("insert_id", params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user")));
+			data.put("update_id", params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user")));
 			data.put("insert_date", new java.sql.Timestamp(new java.util.Date().getTime()));
 			data.put("update_date", new java.sql.Timestamp(new java.util.Date().getTime()));
-			data.put("insert_ip", params.getString("header.remote_addr"));
-			data.put("update_ip", params.getString("header.remote_addr"));
+			data.put("insert_ip", params.getString(Record.key(Record.PREFIX_TYPE_HEADER, "remote_addr")));
+			data.put("update_ip", params.getString(Record.key(Record.PREFIX_TYPE_HEADER, "remote_addr")));
 
 			DB.insert(con, data, "webmua.graha_mail");
 			return data;

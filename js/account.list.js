@@ -26,9 +26,6 @@ function fetch_message(graha_mail_account_id, obj, callback) {
 		enctype: 'multipart/form-data',
 		data: formData,
 		success: function(result) {
-			if(callback) {
-				callback(obj);
-			}
 			var res = parse_graha_xml_document(result);
 			if(res.errors && res.errors.error) {
 				alert(res.errors.error);
@@ -39,6 +36,9 @@ function fetch_message(graha_mail_account_id, obj, callback) {
 				} else {
 					$(obj).val("성공");
 				}
+			}
+			if(callback) {
+				callback(obj);
 			}
 		},
 		error: function(result) {

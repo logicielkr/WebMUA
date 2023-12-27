@@ -23,8 +23,8 @@ package kr.graha.sample.webmua;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import kr.graha.lib.Processor;
-import kr.graha.lib.Record;
+import kr.graha.post.interfaces.Processor;
+import kr.graha.post.lib.Record;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import kr.graha.helper.LOG;
@@ -78,7 +78,7 @@ import javax.mail.internet.ParseException;
  * 
  * @author HeonJik, KIM
  
- * @see kr.graha.lib.Processor
+ * @see kr.graha.post.interfaces.Processor
  
  * @version 0.9
  * @since 0.9
@@ -109,32 +109,32 @@ public class MailParserProcessorImpl implements Processor {
  * @see jakarta.servlet.http.HttpServletRequest (Apache Tomcat 10 이상)
  * @see javax.servlet.http.HttpServletResponse (Apache Tomcat 10 미만)
  * @see jakarta.servlet.http.HttpServletResponse (Apache Tomcat 10 이상)
- * @see kr.graha.lib.Record 
+ * @see kr.graha.post.lib.Record 
  * @see java.sql.Connection 
  */
 	public void execute(HttpServletRequest request, HttpServletResponse response, Record params, Connection con) {
 		this.execute(params, con);
 	}
 	public void execute(Record params, Connection con) {
-		if(!params.hasKey("prop.mail.save.directory")) {
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory"))) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("prop.mail.save.directory is required!!!"); }
-			params.put("error.error", "message.30001");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.30001");
 			return;
 		}
-		if(!params.hasKey("param.graha_mail_account_id")) {
+		if(!params.hasKey(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id"))) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe("param.graha_mail_account_id is required!!!"); }
-			params.put("error.error", "message.30002");
+			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.30002");
 			return;
 		}
-		int graha_mail_account_id = params.getInt("param.graha_mail_account_id");
-		String mailSaveDirectory = params.getString("prop.mail.save.directory");
+		int graha_mail_account_id = params.getInt(Record.key(Record.PREFIX_TYPE_PARAM, "graha_mail_account_id"));
+		String mailSaveDirectory = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.save.directory"));
 		String mailBackupDirectory = null;
-		if(params.hasKey("prop.mail.backup.directory")) {
-			mailBackupDirectory = params.getString("prop.mail.backup.directory");
+		if(params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory"))) {
+			mailBackupDirectory = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "mail.backup.directory"));
 		}
 		
 		Object[] param = new Object[2];
-		param[0] = params.getString("prop.logined_user");
+		param[0] = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"));
 		param[1] = graha_mail_account_id;
 		
 		String sql = null;
@@ -159,16 +159,20 @@ public class MailParserProcessorImpl implements Processor {
 				int savedMailCount = 0;
 				for (Object v : result) {
 					MailCharsetInfo mailInfo = (MailCharsetInfo)v;
-					if(saveMail(mailInfo, con, params, mailSaveDirectory, mailBackupDirectory)) {
-						savedMailCount++;
+					try {
+						if(saveMail(mailInfo, con, params, mailSaveDirectory, mailBackupDirectory)) {
+							savedMailCount++;
+						}
+					} catch(MessagingException me) {
+						if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(me)); }
 					}
 				}
 				if(savedMailCount > 0) {
-					params.put("result.savedMailCount", savedMailCount);
+					params.put(Record.key(Record.PREFIX_TYPE_RESULT, "savedMailCount"), savedMailCount);
 				}
 			} else {
 			}
-		} catch(SQLException | MessagingException | IOException e) {
+		} catch(SQLException | IOException e) {
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
 		}
 	}
@@ -423,12 +427,12 @@ public class MailParserProcessorImpl implements Processor {
 				data.put("email_address", emailAddress);
 			}
 			data.put("graha_mail_id", mailInfo.getGrahaMailId());
-			data.put("insert_id", params.getString("prop.logined_user"));
-			data.put("update_id", params.getString("prop.logined_user"));
+			data.put("insert_id", params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user")));
+			data.put("update_id", params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user")));
 			data.put("insert_date", new Timestamp(new Date().getTime()));
 			data.put("update_date", new Timestamp(new Date().getTime()));
-			data.put("insert_ip", params.getString("header.remote_addr"));
-			data.put("update_ip", params.getString("header.remote_addr"));
+			data.put("insert_ip", params.getString(Record.key(Record.PREFIX_TYPE_HEADER, "remote_addr")));
+			data.put("update_ip", params.getString(Record.key(Record.PREFIX_TYPE_HEADER, "remote_addr")));
 			DB.insert(con, data, "webmua.graha_mail_address");
 		} else {
 			throw new SQLException("fail next value sequence(graha_mail_address_id)");
@@ -528,8 +532,8 @@ public class MailParserProcessorImpl implements Processor {
 		}
 		
 		param[index + 1] = new Timestamp(new Date().getTime());
-		param[index + 2] = params.getString("prop.logined_user");
-		param[index + 3] = params.getString("header.remote_addr");
+		param[index + 2] = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user"));
+		param[index + 3] = params.getString(Record.key(Record.PREFIX_TYPE_HEADER, "remote_addr"));
 		param[index + 4] = mailInfo.getGrahaMailId();
 		DB.execute(con, null, sql, param);
 	}
@@ -924,12 +928,12 @@ public class MailParserProcessorImpl implements Processor {
 				data.put("path", path);
 			}
 			data.put("graha_mail_id", mailInfo.getGrahaMailId());
-			data.put("insert_id", params.getString("prop.logined_user"));
-			data.put("update_id", params.getString("prop.logined_user"));
+			data.put("insert_id", params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user")));
+			data.put("update_id", params.getString(Record.key(Record.PREFIX_TYPE_PROP, "logined_user")));
 			data.put("insert_date", new Timestamp(new Date().getTime()));
 			data.put("update_date", new Timestamp(new Date().getTime()));
-			data.put("insert_ip", params.getString("header.remote_addr"));
-			data.put("update_ip", params.getString("header.remote_addr"));
+			data.put("insert_ip", params.getString(Record.key(Record.PREFIX_TYPE_HEADER, "remote_addr")));
+			data.put("update_ip", params.getString(Record.key(Record.PREFIX_TYPE_HEADER, "remote_addr")));
 			DB.insert(con, data, "webmua.graha_mail_part");
 		} else {
 			throw new SQLException("fail next value sequence(graha_mail_part_id)");

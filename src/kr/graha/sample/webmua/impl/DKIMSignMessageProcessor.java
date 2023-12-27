@@ -22,7 +22,7 @@
 package kr.graha.sample.webmua.impl;
 
 import java.util.HashMap;
-import kr.graha.lib.Record;
+import kr.graha.post.lib.Record;
 import java.sql.Connection;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
@@ -83,11 +83,11 @@ public class DKIMSignMessageProcessor implements MessageProcessor {
 		
 		if(signingDomain != null) {
 			if(
-				params.hasKey("prop.dkim." + signingDomain + ".selector") &&
-				params.hasKey("prop.dkim." + signingDomain + ".private.key.der")
+				params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "dkim." + signingDomain + ".selector")) &&
+				params.hasKey(Record.key(Record.PREFIX_TYPE_PROP, "dkim." + signingDomain + ".private.key.der"))
 			) {
-				String selector = params.getString("prop.dkim." + signingDomain + ".selector");
-				String derFileName = params.getString("prop.dkim." + signingDomain + ".private.key.der");
+				String selector = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "dkim." + signingDomain + ".selector"));
+				String derFileName = params.getString(Record.key(Record.PREFIX_TYPE_PROP, "dkim." + signingDomain + ".private.key.der"));
 				try {
 					DKIMSigner signer = new DKIMSigner(signingDomain, selector, derFileName);
 					return new SMTPDKIMMessage(msg, signer);
