@@ -926,7 +926,7 @@ Javascript가 활성화되어 있지 않은 경우, HTML 소스코드가 출력�
 			<param name="graha_mail_folder_id" type="param" value="graha_mail_folder_id" />
 		</redirect>
 	</query>
-	<query id="move" funcType="query" label="메일 폴더 이동">
+	<query id="move" funcType="query" label="메일 폴더 이동" allow="get">
 		<commands>
 			<command>
 				<sql>
@@ -1093,7 +1093,7 @@ Javascript가 활성화되어 있지 않은 경우, HTML 소스코드가 출력�
 			<param name="graha_mail_id" type="param" value="graha_mail_id" />
 		</redirect>
 	</query>
-	<query id="charset" funcType="query" label="Change Charset">
+	<query id="charset" funcType="query" label="Change Charset" allow="get">
 		<header>
 			<messages>
 				<message name="50001">[50001]프로그램의 에러가 발생했습니다.  관리자(프로그래머)가 문제를 해결 할 때까지 동일한 에러가 반복될 가능성이 높습니다.  시스템 사용을 중단하시고, 관리자에게 도움을 요청하시기 바랍니다.</message>
