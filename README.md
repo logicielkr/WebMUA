@@ -26,7 +26,7 @@ webmua 프로그램는 웹메일 프로그램과 유사한 외관이지만, pop3
 - Apache Tomcat 7.x 이상
 - PostgreSQL 9.1.4 이상
 - JDBC 4.0 이상
-- Graha 0.5.0.6 이상
+- Graha 0.5.1.187 이상
 - 최신버전의 JavaMail API
 
 ## 4. 테스트한 메일 서버
