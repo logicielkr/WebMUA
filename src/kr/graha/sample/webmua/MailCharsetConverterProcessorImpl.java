@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import javax.mail.MessagingException;
 import java.io.IOException;
 import java.sql.Connection;
+import java.net.URISyntaxException;
 
 /**
  * 이메일의 Charset 을 변경한다.
@@ -101,7 +102,7 @@ public class MailCharsetConverterProcessorImpl implements Processor {
 			mailInfo.setGrahaMailId(graha_mail_id);
 			MailParserProcessorImpl parser = new MailParserProcessorImpl();
 			parser.saveMail(mailInfo, con, params, mailSaveDirectory, mailBackupDirectory);
-		} catch(SQLException | MessagingException | IOException e) {
+		} catch(SQLException | MessagingException | IOException | URISyntaxException e) {
 			params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.50005");
 			if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(e)); }
 		}

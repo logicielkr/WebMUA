@@ -44,6 +44,7 @@ import java.util.List;
 import javax.mail.URLName;
 import java.io.File;
 import com.sun.mail.imap.IMAPMessage;
+import java.net.URISyntaxException;
 
 /**
  * IMAP 서버에서 이메일을 가져온다.
@@ -219,7 +220,7 @@ public class FetchMailFromImapProcessorImpl implements Processor {
 						MailParserProcessorImpl parser = new MailParserProcessorImpl();
 						parser.saveMail(mailInfo, con, params, mailSaveDirectory, mailBackupDirectory);
 						
-					} catch (MessagingException | IOException e) {
+					} catch (MessagingException | IOException | URISyntaxException e) {
 						if(isConnect) {
 							params.put(Record.key(Record.PREFIX_TYPE_ERROR, "error"), "message.40010");
 						} else {
