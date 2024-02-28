@@ -72,6 +72,8 @@ import com.sun.mail.util.BASE64DecoderStream;
 
 import javax.mail.Part;
 import javax.mail.internet.ParseException;
+import java.nio.file.Paths;
+import java.net.URISyntaxException;
 
 /**
  * IMAP4 혹은 POP3 에서 가져온 이메일을 데이타베이스에 집어 넣는다.
@@ -163,7 +165,7 @@ public class MailParserProcessorImpl implements Processor {
 						if(saveMail(mailInfo, con, params, mailSaveDirectory, mailBackupDirectory)) {
 							savedMailCount++;
 						}
-					} catch(MessagingException me) {
+					} catch(MessagingException | URISyntaxException me) {
 						if(logger.isLoggable(Level.SEVERE)) { logger.severe(LOG.toString(me)); }
 					}
 				}
@@ -191,14 +193,14 @@ public class MailParserProcessorImpl implements Processor {
 		Record params,
 		String mailSaveDirectory,
 		String mailBackupDirectory
-	) throws SQLException, MessagingException, IOException {
+	) throws SQLException, MessagingException, IOException, URISyntaxException {
 		File eml = new File(mailSaveDirectory + "eml" + File.separator + mailInfo.getGrahaMailId().intValue() + File.separator + "mail.eml");
 		if(eml.exists() && eml.length() > 2) {
 			MimeMessage mime = getMessage(eml);
 			if(mime != null) {
 				try {
 					return save(mime, mailInfo, con, params, mailSaveDirectory, mailBackupDirectory, false);
-				} catch (SQLException | MessagingException | IOException e) {
+				} catch (SQLException | MessagingException | IOException | URISyntaxException e) {
 					if(logger.isLoggable(Level.SEVERE)) { logger.severe("[Email Parsing Error]graha_mail_id = " + mailInfo.getGrahaMailId()); }
 					throw e;
 				}
@@ -210,7 +212,7 @@ public class MailParserProcessorImpl implements Processor {
 			if(mime != null) {
 				try {
 					return save(mime, mailInfo, con, params, mailSaveDirectory, mailBackupDirectory, true);
-				} catch (SQLException | MessagingException | IOException e) {
+				} catch (SQLException | MessagingException | IOException | URISyntaxException e) {
 					if(logger.isLoggable(Level.SEVERE)) { logger.severe("[Email Parsing Error]graha_mail_id = " + mailInfo.getGrahaMailId()); }
 					throw e;
 				}
@@ -282,7 +284,7 @@ public class MailParserProcessorImpl implements Processor {
 		String mailSaveDirectory,
 		String mailBackupDirectory,
 		boolean onlyHeader
-	) throws MessagingException, IOException, SQLException
+	) throws MessagingException, IOException, SQLException, URISyntaxException
 	{
 		try {
 			mailInfo.setGuessCharset(guessCharset(mime));
@@ -293,7 +295,7 @@ public class MailParserProcessorImpl implements Processor {
 			saveAddress(mime, mailInfo, con, params);
 			updateMail(mime, mailInfo, con, params);
 			return true;
-		} catch(MessagingException | IOException | SQLException e) {
+		} catch(MessagingException | IOException | SQLException | URISyntaxException e) {
 			throw e;
 		}
 	}
@@ -590,7 +592,7 @@ public class MailParserProcessorImpl implements Processor {
 		Record params,
 		String mailSaveDirectory,
 		String mailBackupDirectory
-	) throws MessagingException, IOException, SQLException
+	) throws MessagingException, IOException, SQLException, URISyntaxException
 	{
 		String parentType = parentContentType;
 		if(parentType == null) {
@@ -799,7 +801,7 @@ public class MailParserProcessorImpl implements Processor {
 		MailCharsetInfo mailInfo,
 		String mailSaveDirectory,
 		String mailBackupDirectory
-	) throws IOException, MessagingException
+	) throws IOException, MessagingException, URISyntaxException
 	{
 		if(mailSaveDirectory != null) {
 			saveFile(part, mailInfo, mailSaveDirectory);
@@ -819,7 +821,7 @@ public class MailParserProcessorImpl implements Processor {
 		Part part,
 		MailCharsetInfo mailInfo,
 		String dir
-	) throws IOException, MessagingException
+	) throws IOException, MessagingException, URISyntaxException
 	{
 		if(part.getContent() instanceof InputStream || (part.getDisposition() != null && part.getDisposition().equalsIgnoreCase("attachment"))) {
 			String path = dir + "attach" + File.separator + mailInfo.getGrahaMailId();
@@ -861,28 +863,11 @@ public class MailParserProcessorImpl implements Processor {
 			if(fileName != null && fileName.lastIndexOf("/") > 0) {
 				fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
 			}
-			while(true) {
-				if(index == 0) {
-					file = new File(path + File.separator + fileName);
-				} else {
-					if(fileName.lastIndexOf(".") > 0) {
-						file = new File(path + File.separator + fileName.substring(0, fileName.lastIndexOf(".")) + "-" + index + "." + fileName.substring(fileName.lastIndexOf(".") + 1));
-					} else {
-						file = new File(path + File.separator + fileName + "-" + index);
-					}
-				}
-				if(!file.exists()) {
-					break;
-				}
-				index++;
-			}
-			
 			InputStream is = part.getInputStream();
-			Files.copy(is, file.toPath());
+			Files.copy(is, Paths.get(ForwardMailProcessorImpl.getUniqueFileURI(path, fileName)));
 		} else {
 			throw new MessagingException("incorrect attach file");
 		}
-	
 	}
 /**
  * 이메일 내용을 데이타베이스에 저장한다.

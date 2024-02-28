@@ -285,25 +285,11 @@ public class MailSendProcessorImpl implements Processor {
 			}
 		}
 	}
-/**
- * URI 객체로부터 파일이름을 가져온다.
- 
- * @param uri URI 객체(Path.toURI() 메소드의 결과)
- * @return 파일이름
- */
-	public String decodeFileName(URI uri) {
-		try {
-			return URLDecoder.decode(uri.toString().substring(uri.toString().lastIndexOf("/") + 1), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			if(logger.isLoggable(Level.SEVERE)) { logger.warning(LOG.toString(e)); }
-			return uri.toString().substring(uri.toString().lastIndexOf("/")+1);
-		}
-	}
 	public MimeMessage getMessageWithMessageProcessor(
 		HashMap mailAccount, Record params, Connection con, Session session, HttpServletRequest request
 	) throws 
 		AddressException, 
-		UnsupportedEncodingException, 
+		UnsupportedEncodingException,
 		SQLException, 
 		MessagingException
 	{
@@ -447,13 +433,17 @@ public class MailSendProcessorImpl implements Processor {
 						stream = Files.newDirectoryStream(Paths.get(path));
 						int index = 0;
 						for(Path file : stream) {
-							if(file.toFile().isFile()) {
+//							if(file.toFile().isFile()) {
+							if(Files.isRegularFile(file)) {
 								if(index == 0) {
 									multipart = new MimeMultipart("mixed");
 								}
-								String fileName = decodeFileName(file.toUri());
+								String fileName = ForwardMailProcessorImpl.decodeFileName(file.toUri());
 								MimeBodyPart part = new MimeBodyPart();
-								part.attachFile(file.toFile());
+								part.setDataHandler(new javax.activation.DataHandler(new PathDataSource(file)));
+//								part.attachFile(new File(file.toUri()));
+//								part.setDataHandler(new javax.activation.DataHandler(file.toUri().toURL()));
+//								part.attachFile(file.toFile());
 								String base64EncodedFileName = MimeUtility.encodeText(fileName, charset, "B");
 								base64EncodedFileName = base64EncodedFileName.replace("?= =?" + charset + "?B?", "?=\r\n\t=?" + charset + "?B?");
 								

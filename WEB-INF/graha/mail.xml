@@ -237,7 +237,6 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 					<param name="search" datatype="varchar" value="param.search" cond="${param.search} isNotEmpty" />
 					<param name="search" datatype="varchar" value="param.search" cond="${param.search} isNotEmpty" />
 					<param name="search" datatype="varchar" value="param.search" cond="${param.search} isNotEmpty" />
-					<param name="search" datatype="varchar" value="param.search" cond="${param.search} isNotEmpty" />
 				</params>
 			</command>
 		</commands>
@@ -373,6 +372,13 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 			<script src="//unpkg.com/@ungap/url-search-params@0.2.2/min.js" />
 			<script src="../../js/mail.insert.js" />
 			<script src="../../js/mail.insert.check_submit.js" name="check_submit" override="true" />
+			<style><![CDATA[
+<xsl:if test="/document/params[@for='data']/graha_mail_fid">
+ul#mail\.file, ul#mail\.file input {
+	display:none;
+}
+</xsl:if>
+			]]></style>
 			<codes>
 				<code name="graha_mail_address_type">
 					<sql>
