@@ -372,6 +372,7 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 			<script src="//unpkg.com/@ungap/url-search-params@0.2.2/min.js" />
 			<script src="../../js/mail.insert.js" />
 			<script src="../../js/mail.insert.check_submit.js" name="check_submit" override="true" />
+			<script src="//graha.kr/static-contents/client_lib/formula/0.5.0.0/GrahaFormula.js" />
 			<style><![CDATA[
 <xsl:if test="/document/params[@for='data']/graha_mail_fid">
 ul#mail\.file, ul#mail\.file input {
@@ -542,6 +543,10 @@ ul#mail\.file, ul#mail\.file input {
 		<validation method="POST">
 			<param name="subject" not-null="true" msg="message.10002" />
 		</validation>
+		<calculator>
+			<param name="personal_name.{N}" form="insert" event="blur submit" expr="trim(personal_name.{N})" />
+			<param name="email_address.{N}" form="insert" event="blur submit" expr="trim(email_address.{N})" />
+		</calculator>
 		<layout msg="message.10003">
 			<top>
 				<left>

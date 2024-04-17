@@ -207,13 +207,15 @@ $(document).ready(function() {
 function getEmailAddress() {
 	var email = null;
 	if(arguments.length == 1) {
-		if(arguments[0].name && arguments[0].name != null && arguments[0].name != "") {
-			email = arguments[0].name;
-		}
-		if(email == null && arguments[0].address && arguments[0].address != null && arguments[0].address != "") {
-			email = arguments[0].address;
-		} else if(email != null && arguments[0].address && arguments[0].address != null && arguments[0].address != "") {
-			email += " <" + arguments[0].address + ">";
+		if(arguments[0] != null) {
+			if(arguments[0].name && arguments[0].name != null && arguments[0].name != "") {
+				email = arguments[0].name;
+			}
+			if(email == null && arguments[0].address && arguments[0].address != null && arguments[0].address != "") {
+				email = arguments[0].address;
+			} else if(email != null && arguments[0].address && arguments[0].address != null && arguments[0].address != "") {
+				email += " <" + arguments[0].address + ">";
+			}
 		}
 		return email;
 	} else if(arguments.length == 2) {

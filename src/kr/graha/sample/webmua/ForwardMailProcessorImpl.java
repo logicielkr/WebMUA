@@ -144,8 +144,6 @@ public class ForwardMailProcessorImpl implements Processor {
 	}
 /**
  * URI 객체로부터 파일이름만 가져온다.
- * URLDecoder.decode 를 이용해서 UTF-8 로 디코딩해서 가져온다.
- * 파일이름에 "+" 가 있는 경우 "%2B" 로 변경해서 가져온다.
  *
  * 이 메소드는 graha 라이브러리의 GFile 에 있는 것을 그대로 복사한 것이다.
  *
@@ -153,12 +151,15 @@ public class ForwardMailProcessorImpl implements Processor {
  * @return 파일이름
  */
 	protected static String decodeFileName(URI uri) {
+		return uri.getPath().substring(uri.getPath().lastIndexOf("/") + 1);
+/*
 		try {
-			return URLDecoder.decode(uri.toString().substring(uri.toString().lastIndexOf("/") + 1).replace("+", "%2B"), "UTF-8");
+//			return URLDecoder.decode(uri.toString().substring(uri.toString().lastIndexOf("/") + 1).replace("+", "%2B"), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 			return uri.toString().substring(uri.toString().lastIndexOf("/")+1);
 		}
+*/
 	}
 /**
  * 유일한 파일이름을 URI로 가져온다.
