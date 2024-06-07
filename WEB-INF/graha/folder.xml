@@ -6,7 +6,7 @@
 	<query id="list" funcType="listAll" label="메일폴더">
 		<header>
 			<style src="../../css/folder.list.css" />
-			<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" name="jquery" override="true" preload="true" />
 			<script><![CDATA[
 var graha_mail_account_id = <xsl:value-of select="/document/props/mail_account.graha_mail_account_id" />;
 var graha_mail_account_type = "<xsl:value-of select="/document/props/mail_account.type" />";
@@ -184,7 +184,7 @@ div.nav.bottom div.box.left form {
 
 			]]></style>
 			<style src="../../css/folder.insert.css" />
-			<script name="jquery" src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" />
+			<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" name="jquery" override="true" preload="true" />
 			<script name="check_submit" src="../../js/folder.insert.check_submit.js" override="true" />
 			<prop name="mail_account" public="true">
 				<sql>

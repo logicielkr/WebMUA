@@ -4,8 +4,8 @@
 	<query id="list" funcType="listAll" label="메일계정">
 		<header>
 			<style src="../../css/account.list.css" />
-			<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
-			<script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js" />
+			<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" name="jquery" override="true" preload="true" />
+			<script src="//cdn.jsdelivr.net/npm/jquery-ui@1.13.3/dist/jquery-ui.min.js" name="jquery-ui.js" override="true" />
 			<script src="../../js/order_number.js" />
 			<script src="../../js/account.list.js" />
 			<top><![CDATA[
@@ -93,7 +93,7 @@ Javascript가 활성화되지 않은 경우 메시지 가져오기 기능을 사
 				<message name="70003" public="true">이 값을 MessageID로 변경하시면, 서버에서 이메일을 받아올 때 MessageID 가 없는 이메일은 생략됩니다.</message>
 			</messages>
 			<style src="../../css/account.insert.css" />
-			<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" name="jquery" override="true" preload="true" />
 			<script src="../../js/account.insert.js" />
 			<style><![CDATA[
 <!--
@@ -415,7 +415,7 @@ table#graha_mail_account td.smtp_encryption_type
 				<message name="70003" public="true">정말로 삭제하시겠습니까?</message>
 			</messages>
 			<style src="../../css/account.detail.css" />
-			<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" name="jquery" override="true" preload="true" />
 			<script src="../../js/order_number.js" />
 			<script src="../../js/account.detail.js" />
 		</header>

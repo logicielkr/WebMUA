@@ -10,8 +10,8 @@
 			</messages>
 			<style src="../../css/mail.list.css" />
 			<style src="../../css/mail.list.nav.css" name="default.nav" override="true" />
-			<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
-			<script src="//unpkg.com/@ungap/url-search-params@0.2.2/min.js" />
+			<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" name="jquery" override="true" preload="true" />
+			<script src="//cdn.jsdelivr.net/npm/@ungap/url-search-params@0.2.2/min.js" />
 			<script src="../../js/mail.list.js" />
 			<style><![CDATA[
 <xsl:if test="not(/document/code[@name='mail_account']/option)">
@@ -368,8 +368,8 @@ Javascript를 사용할 수 없습니다.  메일계정을 변경하시려면 �
 				<message name="90004">[90005]프로그램의 에러가 발생했습니다.  관리자(프로그래머)가 문제를 해결 할 때까지 동일한 에러가 반복될 가능성이 높습니다.  시스템 사용을 중단하시고, 관리자에게 도움을 요청하시기 바랍니다.</message>
 			</messages>
 			<style src="../../css/mail.insert.css" />
-			<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
-			<script src="//unpkg.com/@ungap/url-search-params@0.2.2/min.js" />
+			<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" name="jquery" override="true" preload="true" />
+			<script src="//cdn.jsdelivr.net/npm/@ungap/url-search-params@0.2.2/min.js" />
 			<script src="../../js/mail.insert.js" />
 			<script src="../../js/mail.insert.check_submit.js" name="check_submit" override="true" />
 			<script src="//graha.kr/static-contents/client_lib/formula/0.5.0.0/GrahaFormula.js" />
@@ -627,7 +627,7 @@ ul#mail\.file, ul#mail\.file input {
 				<message name="40015" public="true">이메일 주소가 형식에 맞지 않습니다.</message>
 			</messages>
 			<style src="../../css/mail.detail.css" />
-			<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" />
+			<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" name="jquery" override="true" preload="true" />
 			<script src="../../js/mail.detail.js" />
 			<top><![CDATA[
 <noscript style="display:block;width:100%;text-align:center;">
@@ -674,7 +674,7 @@ Javascript가 활성화되어 있지 않은 경우, HTML 소스코드가 출력�
 					</sql>
 					<params>
 						<param datatype="varchar" value="prop.logined_user" />
-						<param name="graha_mail_account_id" datatype="int" value="param.graha_mail_account_id" default="code.mail_account.firstValue" />
+						<param name="graha_mail_account_id" datatype="int" value="param.graha_mail_account_id" />
 					</params>
 				</code>
 				<code name="default_charset">
