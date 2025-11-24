@@ -192,6 +192,10 @@ public class ForwardMailProcessorImpl implements Processor {
 			}
 			if(Files.notExists(Paths.get(uri))) {
 				break;
+			} else if(Files.isReadable(Paths.get(uri))) {
+			} else {
+				LOG.warning(Paths.get(uri).toString());
+				throw new GrahaRuntimeException(basePath + " (Permission denied)");
 			}
 			index++;
 		}
